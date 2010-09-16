@@ -1,0 +1,12 @@
+#!/bin/sh
+count=0
+for line in {17..231}; do
+  count=`expr $count + 1`
+  cube2=$cube2$(printf $'\e[38;05;%dm %03d' $line $line)
+  if test $(expr $count % 36) = 0; then
+      cube2=$cube2\\n
+  fi
+done
+echo
+printf "$cube2"
+printf "\e[m\n"

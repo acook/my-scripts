@@ -1,0 +1,100 @@
+#!/usr/bin/ruby
+# Create and display reminders
+
+class Reminder
+  require 'yaml'
+
+  attr_accessor :name, :text, :reminder_file
+
+  @default_reminder_file = "#{`echo -ne $HOME`}/.reminder"
+
+  def reminder_file
+    @reminder_file || @default_reminder_file
+  end
+
+  def save
+    File.new(reminder_file, 'a') do |r|
+      r.puts self.to_yaml
+    end
+  end
+
+  def destroy
+    self.class.destroy hash
+  end
+
+  def self.load(file = @default_reminder_file)
+    all_reminders = self.raw_load file
+    all_reminders.dehashify
+  end
+
+  # find a saved reminder and destroy it
+  def self.destroy(reminders_to_destroy, file = @default_reminder_file)
+    # load up existing reminders
+    loaded_reminders = self.raw_load file
+
+    array_of_reminder_hashes = reminders.is_a? Array ? reminders_to_destroy : reminders.is_a? Reminder ? [reminders.hash] : raise "wrong type passed to destroy"
+    resulting_reminders = loaded_reminders.reject{|h, d| array_of_reminder_hashess.includes h}
+    
+    # if we found a reminder to delete then save the result in the reminder file
+    unless loaded_reminders == resulting_reminders
+
+    else # if we didn't, then return the 
+    end
+  end
+
+  def data
+    { :name => name,
+      :text => text
+    }
+  end
+
+  def to_yaml
+    hashify.to_yaml
+  end
+
+  def hash
+    data.hash
+  end
+
+  def hashify
+    {hash => data}
+  end
+
+  private 
+
+  # turns an array of reminders into a hashed hash of reminders
+  def self.hashify(array_of_reminders)
+    # @rs = Hash.new; return array_of_reminders.each{|r| @rs.merge r.hashify}
+    array_of_reminders.inject(Hash.new){|rs, r| rs.merge r.hashify}}
+  end
+
+  # we don't actually want the hash, just the data
+  # then we pass the resulting array to the contructor
+  # so we get real Reminder objects returned
+  def self.dehashify(hash_of_reminders)
+    all_reminders.map{|hash, data| self.new data}
+  end
+
+  # abstract the reminder loading so I can change the format easily down the road
+  # should return a hash of the data from the file, we don't care how it gets that hash though
+  # TODO: implement format options as needed
+  def self.raw_load(file, format = :yaml)
+    YAML.load_file file
+  end
+
+  # abstract the reminder writing so the format can be easily changed
+  # takes a hash of reminder objects, doesn't care what happens after that
+  # mode should be one of the following:
+  #   :delete or w - write only, for new files or deletes
+  #   :append or a - append, for adding reminders to an existing 
+  # TODO: implement format options as needed
+  def self.raw_write(file, mode, reminders, format = :yaml)
+
+    # a one line if/elsif/else that sets our IO mode
+    mode = mode == :delete ? 'w' : mode == :append ? 'a' : mode
+
+    File.new(file, mode) do |r_file|
+      r_file.puts reminders
+    end
+  end
+end

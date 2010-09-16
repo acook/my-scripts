@@ -1,0 +1,94 @@
+#!/usr/bin/ruby
+# A Ruby 256 color console implementation
+# by xybre September 2010 bitbucket.com/xybre xybreus@gmail.com
+
+# my 8/16 color competition is tput
+# here's a quick reference for it:
+#
+# tput Color Capabilities:
+#
+# tput setab [1-7] - Set a background color using ANSI escape
+# tput setb [1-7] - Set a background color
+# tput setaf [1-7] - Set a foreground color using ANSI escape
+# tput setf [1-7] - Set a foreground color
+# tput Text Mode Capabilities:
+#
+# tput bold - Set bold mode
+# tput dim - turn on half-bright mode
+# tput smul - begin underline mode
+# tput rmul - exit underline mode
+# tput rev - Turn on reverse mode
+# tput smso - Enter standout mode (bold on rxvt)
+# tput rmso - Exit standout mode
+# tput sgr0 - Turn off all attributes
+# Color Code for tput:
+#
+# 0 - Black
+# 1 - Red
+# 2 - Green
+# 3 - Yellow
+# 4 - Blue
+# 5 - Magenta
+# 6 - Cyan
+# 7 - White
+#
+
+module Shimmer
+
+  def fg(color)
+    "\e[38;05;#{color}m"
+  end
+
+  def bg(color)
+    "\e[48;05;#{color}m"
+  end
+
+  def reset_color
+    "\e[0m"
+  end
+
+  # Display some text with the chosen foreground and background colors and then clean up after ourselves.
+  def colorize(fore, back, text) 
+    fg(fore) + bg(back) + text + reset_color
+  end
+
+  def basic_color_chart
+    # Display a color table for the basic 8/16 ANSI colors.
+    # This is still using the "extended" method for generating color codes, so it may not be compatible with all terminals.
+    (1..16).each do |basic_color|
+      printf colorize(17 - basic_color, basic_color, ' # ')
+      puts if basic_color != 0 && basic_color % 4 == 0 
+    end
+    puts reset_color
+  end
+
+  def extended_color_chart
+    # Display the color table for the major component of colors.
+
+    orangy_greens = Array.new
+    (17..231).each_with_index do |extended_color, index|
+      orangy_greens << extended_color if index % 36 == 0 
+      puts if index % 36 == 0 
+      printf colorize(extended_color, 0, ' ' + extended_color.to_padded_s)
+    end
+    puts reset_color
+  end
+
+end
+
+class Integer
+  # Seems there should be something that does this, so there probably is.
+  # However, I'm offline and it was faster to write myself then dig through offline docs.
+  # If I knew regex I'd probably be able to use that as well.
+  # I like recursive functions anyway!
+  def to_padded_s(leng = 3, stringified = nil)
+    stringified ||= self.to_s
+    stringified.length == leng ? stringified : to_padded_s(leng, '0' + stringified)
+  end
+end
+
+# TODO: detect if being run interactively or being loaded and conditionally run the rest of the script
+
+include Shimmer
+
+extended_color_chart
