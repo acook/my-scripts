@@ -6,38 +6,45 @@ class Reminder
 
   attr_accessor :name, :text, :reminder_file
 
-  @default_reminder_file = "#{`echo -ne $HOME`}/.reminder"
+  DEFAULT_REMINDERS_FILE = "#{`echo -ne $HOME`}/.reminders"
 
   def initialize(attributes = nil)
     @name = attributes[:name]
     @text = attributes[:text]
-    @reminder_file = attributes[:reminder_file]
+    @reminder_file = attributes[:reminder_file] || DEFAULT_REMINDERS_FILE 
 
     result = yield self if block_given?
     result
   end
 
-  def reminder_file
-    @reminder_file || @default_reminder_file
+  def self.create(*args)
+    self.new(*args).save
   end
 
-  def save(file = reminder_file)
-    self.class.raw_append self.hashify
+  def save
+    all_reminders = self.class.load @reminder_file
+    all_reminders[:self.hash] ? nil : self.class.raw_append(self.hashify, @reminder_file)
   end
 
   def destroy
-    self.class.destroy hash
+    self.class.destroy hash, @reminder_file
   end
 
-  def self.load(file = reminder_file)
-    all_reminders = self.raw_load file
-    all_reminders.dehashify
+  def self.load(file = nil)
+    #all_remindeers = self.list file
+    all_reminders = self.raw_load(file || DEFAULT_REMINDERS_FILE)
+    all_reminders ? self.dehashify(all_reminders) : ""
+  end
+
+  def self.list(file = nil)
+    throw self.raw_load(file || DEFAULT_REMINDERS_FILE)
   end
 
   # find a saved reminder and destroy it
-  def self.destroy(reminders_to_destroy, file = reminder_file)
+  # TODO: should pull reminder file from the objects, if available
+  def self.destroy(reminders_to_destroy, file)
     # load up existing reminders
-    loaded_reminders = self.raw_load file
+    loaded_reminders = self.raw_load file || DEFAULT_REMINDERS_FILE
 
     if reminders_to_destroy.is_a? Array
       array_of_reminder_hashes = reminders_to_destroy.map{|r|r.is_a? Reminder ? r.hash : r.to_i}
@@ -86,7 +93,7 @@ class Reminder
   # then we pass the resulting array to the contructor
   # so we get real Reminder objects returned
   def self.dehashify(hash_of_reminders)
-    all_reminders.map{|hash, data| self.new data}
+    hash_of_reminders.map{|r_hash, r_data| self.new(r_data)}
   end
 
   # abstract the reminder loading so I can change the format easily down the road
@@ -99,7 +106,7 @@ class Reminder
   # accepts a hash (using hashify) of Reminders
   # appends reminders to the end of the file
   def self.raw_append(reminders, file, format = :yaml)
-    File.new(file, 'a') do |r_file|
+    File.open(file, 'a') do |r_file|
       r_file.puts reminders.to_yaml
     end
   end
@@ -107,7 +114,7 @@ class Reminder
   # accepts a hash (using hashify) of Reminders
   # clears the file and saves a fresh one in its place
   def self.raw_clear_and_write(reminders, file, format = :yaml)
-    File.new(file, 'w') do |r_file|
+    File.open(file, 'w') do |r_file|
       r_file.puts reminders.to_yaml
     end
   end
@@ -122,7 +129,7 @@ exit puts("#{command} - Reminder utility, stores, retrieves, and deletes reminde
 
 # Are we trying to delete a reminder? 
 if ARGV.delete '-d' 
-  exit puts("Reminder \"\" #{Reminder.destroy(ARGV[0]) ? "deleted." : "was not found."}")
+  exit puts("Reminder \"#{ARGV[0]}\" #{Reminder.destroy(ARGV[0]) ? "deleted!" : "was not found."}").to_i
 end
 
 # TODO: add support for alternate reminder files
@@ -130,9 +137,11 @@ end
 
 # or maybe we want a list of reminders
 if ARGV.delete '-l'
-  exit Reminder.load.each{|r| puts r}
+  Reminder.list.each do |r|
+    puts "#{r.hash}: #{r.name} - #{r.text}"
+  end
 end
 
 # but usually we just want to add a reminder
-exit puts("New reminder #{Reminder.new :name => ARGV.shift, :text => ARGV.join(' ') ? 'added.' : 'could not be added!'}")
+exit puts("Reminder #{Reminder.create(:name => ARGV.shift, :text => ARGV.join(' ')) ? 'added!' : 'already exists.'}").to_i
 
