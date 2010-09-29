@@ -1,34 +1,35 @@
-#!/bin/sh
+#!/bin/bash
+# Creates a shiny prompt that integrates well with git
 
+# Load up my script that lets me set colors much easier
+source bashrgb
 
-DEFAULT="[37;40m"
-PINK="[35;40m"
-GREEN="[32;40m"
-ORANGE="[33;40m"
+# Load my prompt helpers that make a lot of this voodoo easier to do
+source prompt_helpers
 
-function PWD { tmp=${PWD%/*/*}; [ ${#tmp} -gt 0 -a "$tmp" != "$PWD" ] && echo ${PWD:${#tmp}+1} || echo $PWD; }
-function title { echo -ne "\\033]0;$*\007"; }
-
+# pulls information from git to display in the prompt
 git_dirty() {
     git status 2> ~/.nil \
     | awk 'index($0,"Untracked files:") { unknown = 1 } 
            index($0,"modified:") { changed = 1 }
+           index($0,"new file:") { new = 1 }
            END {
              if (changed) printf "!"
+             else if (new) printf "."
              else if (unknown) printf "?" 
            }'
 }
 
 git_branch() {
     git branch 2> ~/.nil | \
-        awk '$1 =="*" { printf "\033[37;0m on \033[35;40m" $2 }'
-    #git bookmarks 2> ~/.nil | \
-    #    awk '/\*/ { printf "\033[37;0m at \033[33;40m" $2 }'
+      awk -v on_color="$(fgx 26)" -v branch_color=""$(fgx 199) '$1 =="*" { printf on_color " on " branch_color $2 }'
 }
 
-export PS1='\[$(title $(PWD))\]\
-\n\e${PINK}\u \
-\e${DEFAULT}at \e${ORANGE}\h \
-\e${DEFAULT}in \e${GREEN}\w\
-$(git_branch)\e${GREEN}$(git_dirty)\
-\e${DEFAULT}\n$ '
+# Set the actual prompt string here
+PS1='\[$(title $(PWD))$(fgx 154)\]\w$(git_branch)\[$(fgx 154)\]$(git_dirty)\n\[\r\]\[$(fgx 26)\]\$\[$(fg_reset)\] '
+
+# Extra stuff, maybe use later
+    #git bookmarks 2> ~/.nil | \
+    #    awk '/\*/ { printf "\033[37;0m at \033[33;40m" $2 }'
+
+

@@ -1,0 +1,29 @@
+#!/bin/bash
+# Rails helpers, load with `source rails_helpers`
+
+# Quick run of all tests, will not execute the next test if the previous one fails
+alias all_tests='unit_tests & func_tests & feat_tests'
+# All tests, the brutal way
+alias all_tests='rr & unit_tests; rr & func_tests; rr & feat_tests'
+
+# Shortcuts for each basic test type
+alias unit_tests='rake test:units'
+alias func_tests='rake test:functionals'
+alias feat_tests='rake features'
+
+# Run an individual unit test file
+function unit_test { ruby -I lib:test test/unit/$1_test.rb; }
+# Run an individual functional test file
+function func_test { ruby -I lib:test test/functional/$1_controller_test.rb; }
+# Run an individual feature test file
+function feat_test { rake features FEATURE=features/"$1".feature; }
+# Run a specific line number/scenario from a feature test file
+function scen_test { cucumber features/"$1".feature:"$2"; }
+
+# Pull in RVM's bash script that does stuff 
+if [[ -s ~/.rvm/scripts/rvm ]] ; then source ~/.rvm/scripts/rvm ; fi
+
+# Drop database and set it up for testing
+# TODO: Add a check to see if we're running on a production server
+alias rr='rake db:drop ; rake db:migrate ; rake db:test:clone ; rake db:seed'
+

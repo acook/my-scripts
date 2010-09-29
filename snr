@@ -1,0 +1,18 @@
+#!/bin/bash
+# Quick and dirty search and replace utility in bash and perl
+# Just call it like `snr original_string replacement_string`
+
+function process_directory {
+  for file in *; do
+    if [ -d $file ]; then
+      pushd $file > ~/nil
+      process_directory 
+    fi 
+  done
+  expr="s/$1/$2/g;"
+  perl -pi -w -e $expr * > ~/nil 2> ~/nil
+  popd > ~/nil 2> ~/nil
+}
+
+echo s/$1/$2/g
+process_directory $1 $2
