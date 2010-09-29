@@ -37,27 +37,28 @@ class Reminder
   end
 
   def self.list(file = nil)
-    throw self.raw_load(file || DEFAULT_REMINDERS_FILE)
+    self.raw_load(file || DEFAULT_REMINDERS_FILE)
   end
 
   # find a saved reminder and destroy it
   # TODO: should pull reminder file from the objects, if available
-  def self.destroy(reminders_to_destroy, file)
+  def self.destroy(reminders_to_destroy, file = nil)
+
+    if reminders_to_destroy.is_a? Array
+      hashes_to_remove = reminders_to_destroy.map{|r|r.is_a? Reminder ? r.hash : r.to_i}
+    else # wrap it in an array
+      hashes_to_remove = [reminders_to_destroy.to_i] 
+    end
+
     # load up existing reminders
     loaded_reminders = self.raw_load file || DEFAULT_REMINDERS_FILE
 
-    if reminders_to_destroy.is_a? Array
-      array_of_reminder_hashes = reminders_to_destroy.map{|r|r.is_a? Reminder ? r.hash : r.to_i}
-    else # wrap it in an array
-      reminders_to_destroy = [reminders_to_destroy] 
-    end
-   
-    resulting_reminders = loaded_reminders.reject{|h, d| array_of_reminder_hashess.includes h}
-    
+    resulting_reminders = loaded_reminders.reject{|h, d| hashes_to_remove.include?  h}
+
     # if we found a reminder to delete then save the result in the reminder file
     # and return the new set of reminders from the file
     unless loaded_reminders == resulting_reminders
-      return self.raw_clear_and_write resulting_reminders.hashify, file
+      return self.raw_clear_and_write self.hashify(resulting_reminders), file || DEFAULT_REMINDERS_FILE
     else # if we didn't, then return nil
       return nil
     end
@@ -109,6 +110,7 @@ class Reminder
     File.open(file, 'a') do |r_file|
       r_file.puts reminders.to_yaml
     end
+    reminders
   end
 
   # accepts a hash (using hashify) of Reminders
@@ -117,6 +119,7 @@ class Reminder
     File.open(file, 'w') do |r_file|
       r_file.puts reminders.to_yaml
     end
+    reminders
   end
 
 end
@@ -137,8 +140,15 @@ end
 
 # or maybe we want a list of reminders
 if ARGV.delete '-l'
-  Reminder.list.each do |r|
-    puts "#{r.hash}: #{r.name} - #{r.text}"
+  @reminders = Reminder.list
+  if @reminders then
+    @reminders.each_pair do |hash, data|
+      puts "#{hash}: #{data[:name]} - #{data[:text]}"
+    end
+    exit 0
+  else
+    puts "No reminders found."
+    exit 1
   end
 end
 

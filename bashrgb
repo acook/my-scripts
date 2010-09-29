@@ -62,6 +62,7 @@ bg_white='47'
 reset_colors='0'
 
 # 256 extended colors are indexed and mapped to the same number for both foreground and background
+function hex256 { echo $1 | conv-rgb2xterm; }
 
 # my trademark colors
 color_lime='154'

@@ -6,6 +6,9 @@ PINK="[35;40m"
 GREEN="[32;40m"
 ORANGE="[33;40m"
 
+function PWD { tmp=${PWD%/*/*}; [ ${#tmp} -gt 0 -a "$tmp" != "$PWD" ] && echo ${PWD:${#tmp}+1} || echo $PWD; }
+function title { echo -ne "\\033]0;$*\007"; }
+
 git_dirty() {
     git status 2> ~/.nil \
     | awk 'index($0,"Untracked files:") { unknown = 1 } 
@@ -23,7 +26,8 @@ git_branch() {
     #    awk '/\*/ { printf "\033[37;0m at \033[33;40m" $2 }'
 }
 
-export PS1='\n\e${PINK}\u \
+export PS1='\[$(title $(PWD))\]\
+\n\e${PINK}\u \
 \e${DEFAULT}at \e${ORANGE}\h \
 \e${DEFAULT}in \e${GREEN}\w\
 $(git_branch)\e${GREEN}$(git_dirty)\
