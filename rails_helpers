@@ -1,10 +1,11 @@
 #!/bin/bash
 # Rails helpers, load with `source rails_helpers`
+# TODO: Add a check to see if we're running on a production server
 
-# Quick run of all tests, will not execute the next test if the previous one fails
-alias all_tests='unit_tests & func_tests & feat_tests'
-# All tests, the brutal way
-alias all_tests='rr & unit_tests; rr & func_tests; rr & feat_tests'
+# Run all tests
+alias all_tests='unit_tests; func_tests; feat_tests'
+# All tests, making sure the DB is prepared
+alias allx_tests='db_noseed; unit_tests; func_tests; feat_tests'
 
 # Shortcuts for each basic test type
 alias unit_tests='rake test:units'
@@ -24,6 +25,11 @@ function scen_test { cucumber features/"$1".feature:"$2"; }
 if [[ -s ~/.rvm/scripts/rvm ]] ; then source ~/.rvm/scripts/rvm ; fi
 
 # Drop database and set it up for testing
-# TODO: Add a check to see if we're running on a production server
 alias rr='rake db:drop ; rake db:migrate ; rake db:test:clone ; rake db:seed'
+alias db_noseed='rake db:drop; rake db:migrate; rake db:test:clone'
 
+# Loads the test fixtures into the test database and launches the rails test console
+function test_console { 
+  rake db:fixtures:load RAILS_ENV=test > ~/.nil;
+  rails c test;
+}

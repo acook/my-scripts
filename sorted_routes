@@ -1,0 +1,5 @@
+#!/usr/bin/ruby
+
+routes = `rake routes`
+routes = routes.split("\n").sort{|a, b| a.strip <=> b.strip}
+routes.each{|r| puts r}
