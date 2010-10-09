@@ -4,23 +4,49 @@
 module dBastard
 end
 
-class dBastard::Object
+# This is basically a wrapper around Hash that constrains everything to just the most basic operations
+class dBastard::ObjectStore
   # class methods in singleton
   class << self
-    def object_hash
-      @object_hash ||= Hash.new
-    end
+    # nothing here right now
   end
 
   # instance methods
+
+  # This is where everything gets stored
+  def object_hash
+    @object_hash ||= Hash.new
+  end
+
+  # Returns values from the object hash
   def [] key
     object_hash.fetch key, nil
   end
 
+  # Sets values in the object hash
   def []= key, value
     key, value = key.to_s, value.to_s
     object_hash.store key, value
     key
+  end
+
+  # Returns all keys in object hash
+  def keys
+    object_hash.keys
+  end
+  # Returns all values in object hash
+  def values
+    object_hash.values
+  end
+
+  # Returns boolean based on existance of key in object hash
+  def has_key? key
+    object_hash.has_key? key
+  end
+
+  # Returns boolean based on existance of value in object hash
+  def has_value? value
+    object_hash.has_value? value
   end
 end
 
