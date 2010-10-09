@@ -1,53 +1,141 @@
 #!/usr/bin/ruby
 # A really rough multiple-grouping hash datastore proof-of-concept
 
-module dBastard
+module DBastard
 end
 
-# This is basically a wrapper around Hash that constrains everything to just the most basic operations
-class dBastard::ObjectStore
-  # class methods in singleton
-  class << self
-    # nothing here right now
-  end
-
-  # instance methods
-
+# internal format: @objects = { :some_identifier => "some blob", :other_identifier => "other blob" }
+class DBastard::ObjectStore
   # This is where everything gets stored
-  def object_hash
-    @object_hash ||= Hash.new
+  def objects
+    @objects ||= Hash.new
   end
 
-  # Returns values from the object hash
-  def [] key
-    object_hash.fetch key, nil
+  # Returns a value
+  def [] identifier
+    objects.fetch self.class.identifierize(identifier), nil
   end
 
-  # Sets values in the object hash
-  def []= key, value
-    key, value = key.to_s, value.to_s
-    object_hash.store key, value
-    key
+  def pull *list_or_array_of_identifiers
+    list_or_array_of_identifiers = list_or_array_of_identifiers.first if list_or_array_of_identifiers.length == 1
+    objects.values_at *self.class.identifier_collect(list_or_array_of_identifiers)
   end
 
-  # Returns all keys in object hash
-  def keys
-    object_hash.keys
-  end
-  # Returns all values in object hash
-  def values
-    object_hash.values
+  # Sets a value
+  def update identifier, blob = ''
+    identifier, blob = self.class.identifierize(identifier), blob.to_s
+    objects.store identifier, blob
+    return identifier
   end
 
-  # Returns boolean based on existance of key in object hash
-  def has_key? key
-    object_hash.has_key? key
+  def []= identifier, blob
+    self.update identifier, blob
   end
 
-  # Returns boolean based on existance of value in object hash
-  def has_value? value
-    object_hash.has_value? value
+  def new identifier, blob
+    self.update identifier, blob
+  end
+
+  # Invalidates identifiers
+  def invalidate identifier
+    object.delete identifier
+  end
+
+  class << self
+    def identifierize object
+      object.to_s.to_sym
+    end
+    
+    def bloberize object
+      object.to_s
+    end
+
+    def identifier_collect object_identifier_or_array
+      case object_identifier_or_array
+      when Array
+        object_identifier_or_array.map{|element| identifierize(element)}
+      when nil
+        []
+      else
+        [identifierize(object_identifier_or_array)]
+      end
+    end
   end
 end
 
+# internal format: @groups = { :some_group_identifier => [:array, :of, :object, :keys], :other_group_identifier => [:other, :array, :of, :object, :keys] }
+class DBastard::ObjectGroupStore
+
+  # Where groups are stored
+  def groups
+    @groups ||= Hash.new
+  end
+
+  def object_store
+    @object_store ||= DBastard::ObjectStore.new
+  end
+
+  # Gets the array of object identifiers in the nammed group 
+  def get group_identifier
+    groups.fetch self.class.identifierize(group_identifier), nil
+  end
+
+  def [] group_identifier
+    self.get group_identifier
+  end
+
+  # Adds a new group to the store
+  def new group_identifier, object_identifier_or_array = []
+    groups.store self.class.identifierize(group_identifier), self.class.identifier_collect(object_identifier_or_array)
+  end
+
+  # Adds an object identifier to a group
+  # You should also be able to add individual identifiers the manual way by doing my_group[:my_group_identifier] << :new_object_identifier
+  def add_to_group group_identifier, object_identifier_or_array
+    group  = self.get group_identifier
+    group += identifier_collect(object_identifier_or_array)
+    return group
+  end
+
+  class << self
+    def identifierize object
+      object.to_s.to_sym
+    end
+
+    def identifier_collect object_identifier_or_array
+      case object_identifier_or_array
+      when Array
+        object_identifier_or_array.map{|element| DBastard::ObjectStore.identifierize(element)}
+      when nil
+        []
+      else
+        [DBastard::ObjectStore.identifierize(object_identifier_or_array)]
+      end
+    end
+  end
+end
+
+objects = DBastard::ObjectStore.new
+groups  = DBastard::ObjectGroupStore.new
+
+objects.new :session_1234, {:id => 1, :bar => 134837}
+objects.new :session_2345, {:id => 2, :bar => 184677}
+objects.new :session_3456, {:id => 3, :bar => 1387}
+objects.new :session_4567, {:id => 4, :bar => 1979887}
+objects.new :session_5678, {:id => 5, :bar => 185677}
+objects.new :session_6789, {:id => 6, :bar => 121487}
+objects.new :session_7890, {:id => 7, :bar => 18327}
+
+groups.new :admins, [:session_1234, :session_7890]
+groups.new :business, [:session_1234, :session_2345, :session_3456]
+groups.new :sales, [:session_5678, :session_6789]
+groups.new :contractors, :session_3456
+groups.new :organization, [:session_1234, :session_2345, :session_4567,:session_5678, :session_6789, :session_7890]
+
+puts "objects[:session_6789]"
+puts objects[:session_6789]
+puts "groups[:organization]"
+puts objects.pull groups[:organization]
+puts "groups[:business]"
+puts objects.pull groups[:business]
 
