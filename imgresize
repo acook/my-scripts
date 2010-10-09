@@ -1,0 +1,4 @@
+#!/bin/bash
+
+cp $1 resized-$1
+gm mogrify -resize 100x100 resized-$1

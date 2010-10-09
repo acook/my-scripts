@@ -1,0 +1,103 @@
+#!/usr/bin/ruby
+# Test different image libraries
+# usage : imglib_test image_file height width x_offset y_offset cropped_height cropped_width
+# outputs the results of the benchmark
+#   
+
+usage = "usage : imglib_test image_file height width x_offset y_offset cropped_height cropped_width"
+
+# Make sure we have enough arguments passed to us
+exit puts(usage) || 1 unless ARGV.size == 7
+
+# Pull our file from the commandline
+@file = ARGV.shift
+
+# detect if file exists, otherwise the scene is going to get nasty
+exit puts("File doesn't exist!!").to_i unless File.exist? @file
+
+# Now we save these so we don't have to perform these string operations later
+@file_ext = File.extname(@file)
+@file_basename = File.basename(@file, @file_ext)
+
+# Assign the rest of our variables
+@height, @width, @x_offset, @y_offset, @cropped_height, @cropped_width = *ARGV.map{|a|a.to_i}
+
+# Calculate the two extra variables we need
+@x2 = @x_offset + @cropped_width
+@y2 = @y_offset + @cropped_height
+
+# ImageScience
+require 'image_science'
+def img_sci #(height, width, x1, y1, x2, y2)
+  ImageScience.with_image(@file) do |image|
+    image.resize(@height, @width) do |resized_image|
+      resized_image.with_crop(@x_offset, @y_offset, @x2, @y2) do |cropped_image|
+        cropped_image.save "#{@file_basename}_img_sci_cropped.#{@file_ext}"
+      end
+    end
+  end
+end
+
+
+# MiniMagick
+require 'mini_magick'
+MiniMagick.processor = :gm
+def min_mag #(height, width, x, y, cropped_height, cropped_width)
+  image = MiniMagick::Image.from_file(@file)
+  image.combine_options do |cropped_image|
+    cropped_image.resize "#{@width}x#{@height}"
+    cropped_image.crop "#{@cropped_width}x#{@cropped_height}+#{@x_offset}+#{@y_offset}"
+  end
+  image.write "#{@file_basename}_min_mag_cropped.#{@file_ext}"
+end
+
+
+# Ruby benchmarks
+
+# Here's the standard benchmark
+require 'benchmark'
+benchmarky_stuff = Benchmark.bmbm do |image_benchmark|
+  image_benchmark.report("Image Science") {img_sci}
+  image_benchmark.report("MiniMagick") {min_mag}
+end
+
+# repeated iteration test
+iterations = 20
+deltas = []
+
+# I didn't write this method, but this is the average, not the mean
+def mean(ary)
+  ary.inject(0) { |sum, i| sum += i }/ary.length.to_f 
+end
+# Is this broken because of the incorrect mean function?
+def std_dev(ary, mean)
+  Math.sqrt( (ary.inject(0) { |dev, i| 
+                dev += (i - mean) ** 2}/ary.length.to_f) )
+end
+
+print "\nRunning repetitive testing. This might take a while"
+
+iterations.times do
+  img_sci_result = Benchmark.realtime do
+    img_sci
+  end
+  # cleanup
+  min_mag_result = Benchmark.realtime do
+    min_mag
+  end
+  # cleanup
+  deltas << (img_sci_result - min_mag_result)
+
+  print '.'
+end
+
+deviation = std_dev(deltas, mean(deltas))
+mean_delta = mean(deltas) 
+
+printf "\n\nThe deviation in the deltas was %f\n", deviation
+printf "The mean delta was %f\n", mean_delta
+max = mean_delta + 2.0 * deviation
+min = mean_delta - 2.0 * deviation
+if min <= 0 || 0 >= max
+ puts "There's no statistical difference"
+end

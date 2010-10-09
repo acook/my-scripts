@@ -1,0 +1,14 @@
+#!/bin/bash
+
+function esc () { echo -ne "\\033[$*"; }
+function watch_processes {
+echo -ne $(esc)1A$(esc)2K$(esc)5000D
+  ps -a | grep $1 | grep $2 | grep -v watcher
+}
+
+echo Looking for your process.. \n
+while true; do
+  watch_processes $1 $2
+  sleep 1
+done
+
