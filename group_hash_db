@@ -1,0 +1,27 @@
+#!/usr/bin/ruby
+# A really rough multiple-grouping hash datastore proof-of-concept
+
+module dBastard
+end
+
+class dBastard::Object
+  # class methods in singleton
+  class << self
+    def object_hash
+      @object_hash ||= Hash.new
+    end
+  end
+
+  # instance methods
+  def [] key
+    object_hash.fetch key, nil
+  end
+
+  def []= key, value
+    key, value = key.to_s, value.to_s
+    object_hash.store key, value
+    key
+  end
+end
+
+
