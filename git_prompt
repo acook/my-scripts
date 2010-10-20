@@ -9,14 +9,14 @@ source prompt_helpers
 
 # pulls information from git to display in the prompt
 git_dirty() {
-    git status 2> ~/.nil \
-    | awk 'index($0,"Untracked files:") { unknown = 1 } 
+    git status 2> ~/.nil |
+      awk 'index($0,"Untracked files:") { unknown = 1 } 
            index($0,"modified:") { changed = 1 }
            index($0,"new file:") { new = 1 }
            END {
-             if (changed) printf "!"
+             if (unknown) printf "?" 
+             else if (changed) printf "!"
              else if (new) printf "."
-             else if (unknown) printf "?" 
            }'
 }
 
@@ -27,6 +27,11 @@ git_branch() {
 
 # Set the actual prompt string here
 PS1='\[$(title $(PWD))$(fgx 154)\]\w$(git_branch)\[$(fgx 154)\]$(git_dirty)\n\[\r\]\[$(fgx 26)\]\$\[$(fg_reset)\] '
+
+# Pseudocode for new features
+# if exists? '.git' then display_git_prompt # speed up the prompt if there's no git repo in this directory
+# display_git_prompt() {git_dirty; git_branch;} # Encapsulate the functionality, no point in shoving it all into the prompt string
+# git_dirty() { ..code.. unless $1 echo} # adds a linefeed if you are calling it without any args to distinguish between interactive and noninteractive usage
 
 # Extra stuff, maybe use later
     #git bookmarks 2> ~/.nil | \

@@ -1,4 +1,53 @@
 #!/usr/bin/ruby
 # LWML : Light-Weight Markup Language
 
-
+# what it looks like:
+# = heading
+# == heading
+# === heading
+#
+# or 
+#
+# heading
+# ====
+#
+# heading
+# ----
+#
+# + bulleted list item
+# ++ nested bulleted list item
+#
+# # numbered list item
+# ## nested numbered list item
+#
+# & definition list item | description
+# && nested definition list item | description
+#
+# *bold text*
+# /italic text/
+# `monospaced text`
+# _underlined text_
+# -strikethrough text-
+#
+# http://this_is_a_link.com[optional link name|optional title text]
+# [http://this_is_a_link.com|optional link name|optional title text]
+# [/quick/link|Quick links are useful for pages on the same domain|The forward slash is required]
+#
+# {http://this_is.com/an_image.png|optional title text}
+#
+# http://this_is_a_link.com[{http://that_has.com/an_image.png}|optional title text]
+# [http://this_is_a_link.com|{http://that_has.com/an_image.png}|optional title text]
+#
+#
+# > blockquote
+# > continuation of blockquote
+# >> nested blockquote
+#
+#   preformatted text
+#   has two spaces 
+#   at the begining of the line
+#
+# || table title | column title
+# |  table row   | table cell
+#
+#
