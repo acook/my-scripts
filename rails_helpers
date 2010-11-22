@@ -17,7 +17,7 @@ fi
 # Run all tests
 alias all_tests='unit_tests; func_tests; feat_tests'
 # All tests, making sure the DB is prepared
-alias allx_tests='db_noseed; unit_tests; func_tests; feat_tests'
+alias allx_tests='empty_db; unit_tests; func_tests; rake db:seed & feat_tests'
 
 # Shortcuts for each basic test type
 alias unit_tests='rake test:units'
