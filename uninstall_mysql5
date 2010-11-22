@@ -1,0 +1,33 @@
+#!/bin/bash
+
+echo "MySQL5 OSX Uninstaller by Anthony Cook 2010"
+echo
+
+if [[ $EUID -ne 0 ]]; then
+   echo "This script must be run as root" 1>&2
+   exit 1
+fi
+
+echo "This script will rm -rm all the directories that look like they belong to MySQL!"
+echo "Make sure your MySQL process is not running!"
+
+ps -A | grep mysql | grep -v $0 | grep -v grep
+
+read -p "Press enter to continue or [ctrl-c] to exit."
+
+rm -rf /usr/local/mysql
+rm -rf /usr/local/mysql*
+rm -rf /Library/StartupItems/MySQLCOM
+rm -rf /Library/PreferencePanes/MySQL*
+rm -rf ~/Library/PreferencePanes/MySQL*
+rm -rf /Library/Receipts/mysql*
+rm -rf /Library/Receipts/MySQL*
+rm -rf /var/db/receipts/com.mysql.*
+
+echo "You'll need to remove the 'MYSQLCOM=-YES-' line from your /etc/hostsconfig."
+read -p "Press enter to edit '/etc/hostconfig' with vim or [ctrl-c] to edit it yourself."
+
+vim /etc/hostconfig
+
+echo "Uninstallation complete!"
+echo "If you have any problems, run 'find / -name mysql -print 2> /dev/null' and check the output for any MySQL files that might have been left behind."
