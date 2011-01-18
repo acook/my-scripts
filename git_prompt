@@ -22,7 +22,7 @@ git_dirty() {
 
 git_branch() {
     git branch 2> ~/.nil | \
-      awk -v on_color="$(fgx 26)" -v branch_color=""$(fgx 199) '$1 =="*" { printf on_color " on " branch_color $2 }'
+      awk -v on_color="$(fgx 26)" -v branch_color=""$(fgx 199) '$1 =="*" { printf on_color " on " branch_color $2 " " $3 }'
 }
 
 # Set the actual prompt string here

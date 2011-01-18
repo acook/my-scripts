@@ -4,13 +4,13 @@
 
 if [ $# -gt 0 ]; then
   echo 'rails_helpers: rails CLI helpers by Anthony M. Cook 2010'
-  echo "cat $(which rails_helpers) for more info."
+  echo "cat $(which $0) for more info."
   echo ''
   echo 'aliases:'
-  grep '^alias' $(which rails_helpers)
+  grep '^alias' $(which $0)
   echo ''
   echo 'functions:'
-  grep '^function' $(which rails_helpers)
+  grep '^function' $(which $0)
   exit
 fi
 

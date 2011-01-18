@@ -6,6 +6,10 @@ function test_stdnil {
   done;
 }
 
+function stdnil {
+  exit 0;
+}
+
 function test_file {
   for x in {1..1000}; do
     echo bar > ~/.nil;
@@ -18,8 +22,16 @@ function test_exit {
   done;
 }
 
-function stdnil {
-  exit 0;
+function test_close_out {
+  for x in {1..1000}; do
+    echo baz 1>&- 2>&-;
+  done;
+}
+
+function test_close_out {
+  for x in {1..1000}; do
+    echo baz 1>&- 2>&-;
+  done;
 }
 
 echo -ne "\nstdnil"
@@ -30,4 +42,7 @@ time test_file
 
 echo -ne "\nexit"
 time test_exit
+
+echo -ne "\n1>&- 2>&-"
+time test_close_out
 
