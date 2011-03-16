@@ -1,6 +1,5 @@
 #!/bin/bash
 # Rails helpers, load with `source rails_helpers`
-# TODO: Add a check to see if we're running on a production server
 
 if [ $# -gt 0 ]; then
   echo 'rails_helpers: rails CLI helpers by Anthony M. Cook 2010'
@@ -25,9 +24,9 @@ alias func_tests='rake test:functionals'
 alias feat_tests='rake features'
 
 # Run an individual unit test file
-function unit_test { ruby -I lib:test test/unit/$1_test.rb; }
+function unit_test { ruby -I lib:test test/unit/$1_test.rb $2 $3 $4 $5; }
 # Run an individual functional test file
-function func_test { ruby -I lib:test test/functional/$1_controller_test.rb; }
+function func_test { ruby -I lib:test test/functional/$1_controller_test.rb $2 $3 $4 $5; }
 # Run an individual feature test file
 function feat_test { rake features FEATURE=features/"$1".feature; }
 # Run a specific line number/scenario from a feature test file
@@ -43,13 +42,18 @@ alias test_db='empty_db; rake db:test:clone; rake db:seed &'
 
 # Loads the test fixtures into the test database and launches the rails test console
 function test_console { 
-  rake db:fixtures:load RAILS_ENV=test > ~/.nil;
+  rake db:fixtures:load RAILS_ENV=test > /dev/null;
   rails c test;
   rm -rf ~/.nil;
 }
 
-# Clear the logs, makes grepping easier.
-function clear_logs {
-  echo > log/development.log
-  echo > log/test.log
+# Runs the development server using the test database
+function test_server {
+  echo "Loading fixtures..."
+  rake db:fixtures:load > /dev/null;
+  echo "Starting server..."
+  which thinlogs > /dev/null && dev_db=test.bizbuilt.com thinlogs || dev_db=test.bizbuilt.com rails s;
 }
+
+# Clear the logs, makes grepping easier.
+alias clear_logs='rm -rf logs/*'
