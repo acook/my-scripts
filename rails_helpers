@@ -2,7 +2,7 @@
 # Rails helpers, load with `source rails_helpers`
 
 if [ $# -gt 0 ]; then
-  echo 'rails_helpers: rails CLI helpers by Anthony M. Cook 2010'
+  echo 'rails_helpers: rails CLI helpers by Anthony M. Cook 2010-2011'
   echo "cat $(which $0) for more info."
   echo ''
   echo 'aliases:'
@@ -21,14 +21,14 @@ alias allx_tests='empty_db; unit_tests; func_tests; rake db:seed & feat_tests'
 # Shortcuts for each basic test type
 alias unit_tests='rake test:units'
 alias func_tests='rake test:functionals'
-alias feat_tests='rake features'
+alias feat_tests='cucumber'
 
 # Run an individual unit test file
 function unit_test { ruby -I lib:test test/unit/$1_test.rb $2 $3 $4 $5; }
 # Run an individual functional test file
 function func_test { ruby -I lib:test test/functional/$1_controller_test.rb $2 $3 $4 $5; }
 # Run an individual feature test file
-function feat_test { rake features FEATURE=features/"$1".feature; }
+function feat_test { cucumber FEATURE=features/"$1".feature; }
 # Run a specific line number/scenario from a feature test file
 function scen_test { cucumber features/"$1".feature:"$2"; }
 
@@ -42,7 +42,7 @@ alias test_db='empty_db; rake db:test:clone; rake db:seed &'
 
 # Loads the test fixtures into the test database and launches the rails test console
 function test_console { 
-  rake db:fixtures:load RAILS_ENV=test > /dev/null;
+  RAILS_ENV=test rake db:fixtures:load > /dev/null;
   rails c test;
   rm -rf ~/.nil;
 }
@@ -50,7 +50,7 @@ function test_console {
 # Runs the development server using the test database
 function test_server {
   echo "Loading fixtures..."
-  rake db:fixtures:load > /dev/null;
+  RAILS_ENV=test rake db:fixtures:load > /dev/null;
   echo "Starting server..."
   which thinlogs > /dev/null && dev_db=test.bizbuilt.com thinlogs || dev_db=test.bizbuilt.com rails s;
 }
