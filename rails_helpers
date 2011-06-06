@@ -35,6 +35,9 @@ function scen_test { cucumber features/"$1".feature:"$2"; }
 # Pull in RVM's bash script that does stuff 
 if [[ -s ~/.rvm/scripts/rvm ]] ; then source ~/.rvm/scripts/rvm ; fi
 
+# enable the topsecret developer tools
+export topsecret=enabled
+
 # Database shortcuts
 alias empty_db='rake db:drop; rake db:create; rake db:migrate'
 alias reset_db='empty_db; rake db:seed'
@@ -53,6 +56,12 @@ function test_server {
   RAILS_ENV=test rake db:fixtures:load > /dev/null;
   echo "Starting server..."
   which thinlogs > /dev/null && dev_db=test.bizbuilt.com thinlogs || dev_db=test.bizbuilt.com rails s;
+}
+
+# Generates Railroad diagrams
+function roadia {
+  railroad -M -a -m -t -i -l "Date: $(date '+%Y.%m.%d %H:%M')" -o "models_$(date '+%Y.%m.%d.%H.%M').dot"
+  railroad -C -i -l "Date: $(date '+%Y.%m.%d %H:%M')" -o "models_$(date '+%Y.%m.%d.%H.%M').dot"
 }
 
 # Clear the logs, makes grepping easier.
