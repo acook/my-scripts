@@ -1,0 +1,5 @@
+#!/bin/bash
+
+read -p Be careful with this. It does what it says on the tin, and even makes backups, but its not something you should use every day.
+
+find . -type f -not -path '.git' -print0 | xargs -0 sed -i .bak -E "s/[[:space:]]*$//"
