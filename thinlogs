@@ -1,6 +1,7 @@
 #!/bin/bash
 # This runs the Ruby Thin server, and uses Multitail to follow all the files in the log directory.
 
-thin start > log/server.log &
+echo Starting server..
+thin start -d | tee log/server.log
 multitail --mergeall-new --follow-all --retry-all --no-repeat -n 0 -m 1024 -C -cT ansi log/*
-thin stop >> log/server.log && echo "-- thin exited at $(date)" >> log/server.log || echo "-- thin was already stopped at $(date)" >> log/server.log
+thin stop | tee log/server.log && echo "-- thin exited at $(date)" | tee log/server.log || echo "-- thin was already stopped at $(date)" | tee log/server.log
