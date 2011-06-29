@@ -1,6 +1,7 @@
 #!/bin/bash
 # uses a hybrid of bash and python to syntax color output, doesn't work in all situations
 # I'd like to replace this with a vim script that exits but leaves the text in the buffer
+# `easy_install Pygments`
 
   if [ ! -t 0 ];then
     file=/dev/stdin
