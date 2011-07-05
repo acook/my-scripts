@@ -1,0 +1,3 @@
+[submodule "external/when-changed"]
+	path = external/when-changed
+	url = https://github.com/joh/when-changed.git
