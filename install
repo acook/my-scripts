@@ -14,7 +14,11 @@ git submodule update
 echo Preparing external binaries...
 for f in external/*
   do
-    echo doing stuff to file: $f
+    echo getting list of executables from $f
+    pushd $f
+    find . -maxdepth 1 -type f -perm +111
+    echo copying executables to $dir/$xbin
+    popd
   done
 #end for
 
