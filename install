@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+
+echo -ne pushd:\ 
+pushd `dirname $0`
+
+dir=`pwd`
+bin_dir_name=bin
+xbin_dir_name=xbin
+
+echo Pulling remote submodules...
+git submodule init
+git submodule update
+
+echo Preparing external binaries...
+for f in external/*
+  do
+    echo doing stuff to file: $f
+  done
+#end for
+
+echo Creating symlinks...
+#ln $dir/$bin_dir_name ~/$bin_dir_name
+#ln $dir/$xbin_dir_name ~/$xbin_dir_name
+
+echo Done!
