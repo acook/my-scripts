@@ -37,6 +37,7 @@ if [[ -s ~/.rvm/scripts/rvm ]] ; then source ~/.rvm/scripts/rvm ; fi
 
 # enable the topsecret developer tools
 export topsecret=enabled
+export custom_gems=enabled
 
 # Database shortcuts
 alias empty_db='rake db:drop; rake db:create; rake db:migrate'
