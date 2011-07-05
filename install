@@ -6,6 +6,8 @@ pushd `dirname $0`
 dir=`pwd`
 bin_dir_name=bin
 xbin_dir_name=xbin
+bin_dir=$dir/$bin_dir_name
+xbin_dir=$dir/$xbin_dir_name
 
 echo Pulling remote submodules...
 git submodule init
@@ -15,10 +17,8 @@ echo Preparing external binaries...
 for f in external/*
   do
     echo getting list of executables from $f
-    pushd $f
-    find . -maxdepth 1 -type f -perm +111
-    echo copying executables to $dir/$xbin
-    popd
+    find $f -maxdepth 1 -type f -perm /a+x -exec cp -v {} $xbin_dir/ \;
+    echo copying executables to $xbin_dir
   done
 #end for
 
