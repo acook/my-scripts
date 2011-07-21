@@ -21,6 +21,7 @@ alias allx_tests='empty_db; unit_tests; func_tests; rake db:seed & feat_tests'
 # Shortcuts for each basic test type
 alias unit_tests='rake test:units'
 alias func_tests='rake test:functionals'
+alias inte_tests='rake test:integration'
 alias feat_tests='cucumber'
 
 # Run an individual unit test file
