@@ -14,9 +14,9 @@ if [ $# -gt 0 ]; then
 fi
 
 # Run all tests
-alias all_tests='unit_tests; func_tests; feat_tests'
-# All tests, making sure the DB is prepared
-alias allx_tests='empty_db; unit_tests; func_tests; rake db:seed & feat_tests'
+alias all_tests='rake test'
+# All tests, making sure the DB is prepared with the latest versions
+alias all_db_tests='empty_db; all_tests; seed_db & feat_tests'
 
 # Shortcuts for each basic test type
 alias unit_tests='rake test:units'
@@ -33,7 +33,7 @@ function feat_test { cucumber FEATURE=features/"$1".feature; }
 # Run a specific line number/scenario from a feature test file
 function scen_test { cucumber features/"$1".feature:"$2"; }
 
-# Pull in RVM's bash script that does stuff 
+# Pull in RVM's bash script that does stuff
 if [[ -s ~/.rvm/scripts/rvm ]] ; then source ~/.rvm/scripts/rvm ; fi
 
 # enable the topsecret developer tools
@@ -42,11 +42,12 @@ export custom_gems=enabled
 
 # Database shortcuts
 alias empty_db='rake db:drop; rake db:create; rake db:migrate'
-alias reset_db='empty_db; rake db:seed'
-alias test_db='empty_db; rake db:test:clone; rake db:seed &'
+alias seed_db='rake db:seed'
+alias reset_db='empty_db; seed_db'
+alias test_db='empty_db; rake db:test:clone; seed_db &'
 
 # Loads the test fixtures into the test database and launches the rails test console
-function test_console { 
+function test_console {
   RAILS_ENV=test rake db:fixtures:load > /dev/null;
   rails c test;
   rm -rf ~/.nil;
