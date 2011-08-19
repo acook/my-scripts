@@ -20,7 +20,7 @@ for f in external/*; do
 done
 
 echo Creating symlinks...
-#ln $dir/$bin_dir_name ~/$bin_dir_name
-#ln $dir/$xbin_dir_name ~/$xbin_dir_name
+ln -s $dir/$bin_dir_name ~/$bin_dir_name
+ln -s $dir/$xbin_dir_name ~/$xbin_dir_name
 
 echo Done!
