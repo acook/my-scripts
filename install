@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 
-echo -ne pushd:\ 
-pushd `dirname $0`
+cd `dirname $0`
 
 dir=`pwd`
 bin_dir_name=bin
@@ -12,15 +11,13 @@ git submodule init
 git submodule update
 
 echo Preparing external binaries...
-for f in external/*
-  do
+for f in external/*; do
     echo getting list of executables from $f
     pushd $f
     find . -maxdepth 1 -type f -perm +111
     echo copying executables to $dir/$xbin
     popd
-  done
-#end for
+done
 
 echo Creating symlinks...
 #ln $dir/$bin_dir_name ~/$bin_dir_name
