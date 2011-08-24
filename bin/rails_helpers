@@ -1,5 +1,7 @@
 #!/bin/bash
-# Rails helpers, load with `source rails_helpers`
+# Put this file somewhere in your path then do `chmod +x rails_helpers` on it
+# Put `source rails_helpers` in your ~/.bash_profile or .bashrc
+# Type `rails_helpers ?` to get a quick look at the aliases and functions defined within
 
 if [ $# -gt 0 ]; then
   echo 'rails_helpers: rails CLI helpers by Anthony M. Cook 2010-2011'
@@ -12,6 +14,12 @@ if [ $# -gt 0 ]; then
   grep '^function' $(which $0)
   exit
 fi
+
+# Pull in RVM's bash script that does stuff
+if [[ -s ~/.rvm/scripts/rvm ]] ; then source ~/.rvm/scripts/rvm ; fi
+
+# This is used for systems with configurable gems, see https://gist.github.com/1098370
+export custom_gems=enabled
 
 # Run all tests
 alias all_tests='rake test'
@@ -33,18 +41,15 @@ function feat_test { cucumber FEATURE=features/"$1".feature; }
 # Run a specific line number/scenario from a feature test file
 function scen_test { cucumber features/"$1".feature:"$2"; }
 
-# Pull in RVM's bash script that does stuff
-if [[ -s ~/.rvm/scripts/rvm ]] ; then source ~/.rvm/scripts/rvm ; fi
-
-# enable the topsecret developer tools
-export topsecret=enabled
-export custom_gems=enabled
 
 # Database shortcuts
 alias empty_db='rake db:drop; rake db:create; rake db:migrate'
 alias seed_db='rake db:seed'
 alias reset_db='empty_db; seed_db'
 alias test_db='empty_db; rake db:test:clone; seed_db &'
+
+# Clear the logs, makes grepping easier.
+alias clear_logs='rm -rf logs/'
 
 # Loads the test fixtures into the test database and launches the rails test console
 function test_console {
@@ -54,6 +59,7 @@ function test_console {
 }
 
 # Runs the development server using the test database
+# Uses thin with multitail if you have them installed with my script
 function test_server {
   echo "Loading fixtures..."
   RAILS_ENV=test rake db:fixtures:load > /dev/null;
@@ -67,5 +73,3 @@ function roadia {
   railroad -C -i -l "Date: $(date '+%Y.%m.%d %H:%M')" -o "models_$(date '+%Y.%m.%d.%H.%M').dot"
 }
 
-# Clear the logs, makes grepping easier.
-alias clear_logs='rm -rf logs/*'
