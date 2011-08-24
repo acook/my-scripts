@@ -1,0 +1,12 @@
+#!/usr/bin/env ruby
+
+class Cmdr
+  class Commandline
+    require FileUtils
+    require
+
+    def ls
+
+    end
+  end
+end
