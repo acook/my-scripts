@@ -68,7 +68,7 @@ function test_server {
 
 # Generates Railroad diagrams
 function roadia {
-  railroad -M -a -m -t -i -l "Date: $(date '+%Y.%m.%d %H:%M')" -o "models_$(date '+%Y.%m.%d.%H.%M').dot"
-  railroad -C -i -l "Date: $(date '+%Y.%m.%d %H:%M')" -o "models_$(date '+%Y.%m.%d.%H.%M').dot"
+  railroady -M -a -m -t -i -l "Date: $(date '+%Y.%m.%d %H:%M')" -o "models_$(date '+%Y.%m.%d.%H.%M').dot"
+  railroady -C -i -l "Date: $(date '+%Y.%m.%d %H:%M')" -o "models_$(date '+%Y.%m.%d.%H.%M').dot"
 }
 
