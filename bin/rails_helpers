@@ -45,7 +45,12 @@ function scen_test { echo "Starting scen test..."; cucumber features/"$1".featur
 alias empty_db='rake db:drop; rake db:create; rake db:migrate'
 alias seed_db='rake db:seed'
 alias reset_db='empty_db; seed_db'
-alias test_db='empty_db; rake db:test:clone; seed_db &'
+
+# Get the DB ready for tests
+alias test_db_clone='echo "Cloning test db schema from development db..."; rake db:test:clone_structure'
+alias test_db_prepare='echo "Preparing test DB..."; rake db:test:prepare'
+alias test_db_fixtures='echo "Loading fixtures..."; RAILS_ENV=test rake db:fixtures:load'
+alias test_db='test_db_clone; test_db_fixtures'
 
 # Clear the logs, makes grepping easier.
 alias clear_logs='rm -rf logs/'
