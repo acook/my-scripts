@@ -21,8 +21,8 @@ puts ARGV
 
 # if any arg starts with two dashes and is immediately followed by an alphanumeric
 # then move it to our options array.
-ARGV. { |arg, index| @options << ARGV.delete(index) if arg =~ /$--\a/ }
+ARGV.each { |arg, index| @options << ARGV.delete(index) if arg =~ /$--\a/ }
 
     #p @branch -- source @source = 'origin'
 
-git pull :no_ff @source @branch
+git :pull, :no_ff, @source, @branch
