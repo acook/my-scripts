@@ -33,14 +33,13 @@ alias inte_tests='rake test:integration'
 alias feat_tests='cucumber'
 
 # Run an individual unit test file
-function unit_test { ruby -I lib:test test/unit/$1_test.rb $2 $3 $4 $5; }
+function unit_test { echo "Starting unit test..."; ruby -I lib:test test/unit/$1_test.rb $2 $3 $4 $5; }
 # Run an individual functional test file
-function func_test { ruby -I lib:test test/functional/$1_controller_test.rb $2 $3 $4 $5; }
+function func_test { echo "Starting func test..."; ruby -I lib:test test/functional/$1_controller_test.rb $2 $3 $4 $5; }
 # Run an individual feature test file
-function feat_test { cucumber FEATURE=features/"$1".feature; }
+function feat_test { echo "Starting feat test..."; cucumber FEATURE=features/"$1".feature; }
 # Run a specific line number/scenario from a feature test file
-function scen_test { cucumber features/"$1".feature:"$2"; }
-
+function scen_test { echo "Starting scen test..."; cucumber features/"$1".feature:"$2"; }
 
 # Database shortcuts
 alias empty_db='rake db:drop; rake db:create; rake db:migrate'
