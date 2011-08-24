@@ -56,11 +56,7 @@ alias test_db='test_db_clone; test_db_fixtures'
 alias clear_logs='rm -rf logs/'
 
 # Loads the test fixtures into the test database and launches the rails test console
-function test_console {
-  RAILS_ENV=test rake db:fixtures:load > /dev/null;
-  rails c test;
-  rm -rf ~/.nil;
-}
+alias test_console='test_db; rails c test'
 
 # Runs the development server using the test database
 # Uses thin with multitail if you have them installed with my script
