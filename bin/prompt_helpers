@@ -10,7 +10,7 @@ function shortpath { tmp=${1%/*/*}; [ ${#tmp} -gt 0 -a "$tmp" != "$1" ] && echo 
 
 function remote_hostname {
     if [ `expr "\`uname -a\`" : '.*amzn.*'` != '0' ]; then
-      echo $(fgx 26)`hostname`$(fgb 37):
+      echo $(fgb 37)`hostname`$(fgc 31):
     fi
 }
 
