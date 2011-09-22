@@ -26,7 +26,7 @@ git_branch() {
 }
 
 # Set the actual prompt string here
-PS1='\[$(title $(PWD))\]$(remote_hostname)\[$(fgx 154)\]\w$(git_branch)\[$(fgx 154)\]$(git_dirty)\n\[\r\]\[$(fgx 26)\]\$\[$(fg_reset)\] '
+PS1='\[$(title $(PWD))\]$(remote_hostname)\[$(fgx 154)\]\w$(git_branch)\[$(fgx 154)\]$(git_dirty)\n\[\r\]\[$(fgx 26)\]\$\[$(ansi_reset)\] '
 
 # Pseudocode for new features
 # if exists? '.git' then display_git_prompt # speed up the prompt if there's no git repo in this directory
