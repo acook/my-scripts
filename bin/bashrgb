@@ -3,51 +3,44 @@
 
 # escapes the arguments you send it
 function esc () { echo -ne "\\033[$*"; }
-# color code escapes your first argument then follows with the rest of them
-function escc () { echo -ne "\\033[$1m$2 $3 $4 $5 $6 $7 $8 $9"; }
 
 # ANSI escape for setting colors
 function c () { esc $1m; }
 
-# set foreground color
-# normal
-function fgc () { c "0;$1"; }
 # bold
-function fgb () { c "1;$1"; }
+function bold () { c 1; }
 # underline
-function fgu () { c "4;$1"; }
+function underline () { c 4; }
 # blink - when supported
-function fgk () { c "5;$1"; }
-# reverse
-function fgr () { c "7;$1"; }
-# Resets colors to defaults
-function fg_reset () { c "0"; }
+function blink () { c 5; }
+# reverse (swap fb and bg colors)
+function inverse () { c 7; }
+# reset colors to defaults
+function ansi_reset () { c 0; }
+
+## Foreground Shortcuts
+# normal (reset)
+function fgc () { c "0;$1"; }
+# bold (bright)
+function fgb () { c "1;$1"; }
 
 # easier raw access to 256 colors
 function fgx () { c "38;5;$1"; }
 function bgx () { c "48;5;$1"; }
 
-# system standard terminal colors
-fg_black='30'  # Black/Grey
-fg_red='31'    # Red/Pink
-fg_green='32'  # Green/LightGreen
-fg_yellow='33' # Orange/Yellow
-fg_blue='34'   # Blue/LightBlue
-fg_violet='35' # Purple/Magenta
-fg_cyan='36'   # Teal/Cyan
-fg_white='37'  # Gray/White
+# Basic ANSI color map
+black=0  # Black/Grey
+red=1    # Red/Pink
+green=2  # Green/LightGreen
+yellow=3 # Orange/Yellow
+blue=4   # Blue/LightBlue
+violet=5 # Purple/Magenta
+cyan=6   # Teal/Cyan
+white=7  # Gray/White
 
-# background colors
-bg_black='40'
-bg_red='41'
-bg_green='42'
-bg_yellow='43'
-bg_blue='44'
-bg_violet='45'
-bg_cyan='46'
-bg_white='47'
-
-reset_colors='0'
+# Foreground and Background prefixes
+fg=3
+bg=4
 
 # 256 extended colors are indexed and mapped to the same number for both foreground and background
 function hex256 { echo $1 | conv-rgb2xterm; }
@@ -55,3 +48,7 @@ function hex256 { echo $1 | conv-rgb2xterm; }
 # my trademark colors
 color_lime='154'
 color_neonberry='26'
+
+# color code escapes your first argument then follows with the rest of them
+function cmsg () { echo -ne "$(c $1)$2 $3 $4 $5 $6 $7 $8 $9"; }
+
