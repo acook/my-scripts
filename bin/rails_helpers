@@ -15,9 +15,6 @@ if [ $# -gt 0 ]; then
   exit
 fi
 
-# Pull in RVM's bash script that does stuff
-if [[ -s ~/.rvm/scripts/rvm ]] ; then source ~/.rvm/scripts/rvm ; fi
-
 # This is used for systems with configurable gems, see https://gist.github.com/1098370
 export custom_gems=enabled
 
@@ -57,6 +54,7 @@ alias clear_logs='rm -rf logs/'
 
 # Loads the test fixtures into the test database and launches the rails test console
 alias test_console='test_db; rails c test'
+alias console='pry -r ./config/environment'
 
 # Runs the development server using the test database
 # Uses thin with multitail if you have them installed with my script
