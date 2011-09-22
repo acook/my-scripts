@@ -5,8 +5,14 @@
 function title { echo -ne "\\033]0;$*\007"; }
 # Gets the present working directory and returns just the last 2 directories, good for shortening titles and prompts
 function PWD { tmp=${PWD%/*/*}; [ ${#tmp} -gt 0 -a "$tmp" != "$PWD" ] && echo ${PWD:${#tmp}+1} || echo $PWD; }
-# Does the same thing, but for any path                             
+# Does the same thing, but for any path
 function shortpath { tmp=${1%/*/*}; [ ${#tmp} -gt 0 -a "$tmp" != "$1" ] && echo ${1:${#tmp}+1} || echo $1; }
+
+function remote_hostname {
+    if [ `expr "\`uname -a\`" : '.*amzn.*'` != '0' ]; then
+      echo `hostname`:
+    fi
+}
 
 # Here's a bunch of my old prompt strings, I should probably check these out and toss the crappy ones
 #PS1="\$?-\t | \$(PWD)\n\r\$ "
