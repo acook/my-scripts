@@ -1,0 +1,3 @@
+#!/bin/bash
+
+packages=p7zip, pygments, git, mercurial, keychain
