@@ -6,6 +6,7 @@ sudo pip install Mercurial
 mkdir ~/Pork
 cd ~/Pork
 sudo easy_install hg-git
+sudo easy_install Pygments
 hg clone https://bitbucket.org/durin42/hg-git
 hg clone https://bitbucket.org/sjl/hg-prompt
 hg clone https://bitbucket.org/tksoh/hgshelve
