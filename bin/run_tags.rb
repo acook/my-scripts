@@ -19,8 +19,12 @@ end
 
 def run_tags(dir, run_in_background = false)
   if File.executable?(CTAGS) and File.writable?(dir)
-    cmd = "find #{dir} -name \\\*.rb | #{CTAGS} -f #{dir}/tags -L - 2>>/dev/null"
-    cmd << '&' if run_in_background
+    cmd = Array.new
+    cmd << "find #{dir} -name \\\*.rb | #{CTAGS} -f #{dir}/tags -L -"
+    cmd << '2>>/dev/null' unless $VERBOSE
+    cmd << '&' if run_in_background && !$VERBOSE
+    cmd = cmd.join ' '
+    puts cmd if $VERBOSE
     system cmd
   else
     $stderr.print "FAILED to write TAGS file to #{dir}\n"
@@ -40,5 +44,6 @@ end
 if ARGV.first == '-i'
   install
 else
+  puts 'running tags..' if $VERBOSE
   run_tags Dir.pwd, HOOKS.include?(File.basename(__FILE__))
 end
