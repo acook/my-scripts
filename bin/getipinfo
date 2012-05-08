@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+
+get ifconfig.me/all
