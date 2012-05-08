@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+if [[ -n `command -v curl` ]]; then
+  command="curl -s --connect-timeout 5 --retry 5 --retry-max-time 5"
+else
+  command="wget -t 5 -T 5 -1 -O-"
+fi
+
+if [[ $1 == '-c' ]]; then
+  echo -ne $command
+else
+  if [[ $1 == '-v' ]]; then
+    echo -ne $command
+  fi
+
+  $command $@
+fi
+
