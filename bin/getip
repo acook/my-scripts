@@ -2,12 +2,13 @@
 
 `exit 127`
 until (( $? == 0 )) ; do
-  case $(( RANDOM % 5 )) in
+  case $(( RANDOM % 6 )) in
     0) site="http://www.showmyip.com/simple/" ;;
     1) site="http://cfaj.freeshell.org/ipaddr.cgi" ;;
     2) site="https://secure.informaction.com/ipecho/" ;;
     3) site="http://icanhazip.com/" ;;
     4) site="http://ifconfig.me/ip" ;;
+    5) site="http://ip.appspot.com" ;;
   esac
 done
 
