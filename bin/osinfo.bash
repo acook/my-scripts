@@ -15,10 +15,10 @@ case $UNAME in
     # Gather release info
     if [[ -n `command -v lsb_release` ]]; then
       # dump release info and drop version
-      RELEASE=`lsb_release -ds 2>/dev/null | sed 's/^\(.*\) .*/\L\1/'`
+      RELEASE=`lsb_release -ds 2>/dev/null | sed 's/.*/\L/'`
     else
       # grab first entry and remove extraneous path and filename affixes
-      RELEASE=`echo /etc/*release | head -1 | sed 's:/etc/\(.*\)-release:\1:'`
+      RELEASE=`echo /etc/*release | head -1 | sed 's/.*/\L/'`
     fi
 
     # Detect distro
