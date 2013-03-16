@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Creates a shiny prompt that integrates well with git
 
 # Load up my script that lets me set colors much easier
@@ -9,7 +9,7 @@ source prompt_helpers
 
 # pulls information from git to display in the prompt
 git_dirty() {
-    git status 2> ~/.nil |
+    git status 2> /dev/null |
       awk 'index($0,"Untracked files:") { unknown = 1 }
            index($0,"modified:") { changed = 1 }
            index($0,"new file:") { new = 1 }
@@ -21,7 +21,7 @@ git_dirty() {
 }
 
 git_branch() {
-    git branch 2> ~/.nil | \
+    git branch 2> /dev/null | \
       awk -v on_color="$(fgx 26)" -v branch_color=""$(fgx 199) '$1 =="*" { printf on_color " on " branch_color $2 " " $3 }'
 }
 
@@ -34,7 +34,7 @@ PS1='\[$(title $(PWD))\]$(remote_hostname)\[$(fgx 154)\]\w$(git_branch)\[$(fgx 1
 # git_dirty() { ..code.. unless $1 echo} # adds a linefeed if you are calling it without any args to distinguish between interactive and noninteractive usage
 
 # Extra stuff, maybe use later
-    #git bookmarks 2> ~/.nil | \
+    #git bookmarks 2> /dev/null | \
     #    awk '/\*/ { printf "\033[37;0m at \033[33;40m" $2 }'
 
 
