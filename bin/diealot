@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+
+function exit_with_error {
+  echo >&2 "$@"
+  exit 1
+}
+
+function exit_with_success {
+  echo "$@"
+  exit 0
+}
+
+function exit_if_dead {
+  ps -p $1 > /dev/null 2>&1 && exit_with_success "HEADSHOT! Flawless victory!"
+  sleep 1
+  ps -p $1 > /dev/null 2>&1 && exit_with_success "It put up a struggle, but I always get my PID in the end."
+}
+
+PID=$1
+
+[ "$#" -eq 1 ] || exit_with_error "Give me a PID and I'll give it death!"
+echo $PID | grep -E -q '^[0-9]+$' > /dev/null 2>&1 || exit_with_error "The argument you provided ($PID) doesn't look like a PID to me!"
+kill -0 $PID > /dev/null 2>&1 || exit_with_error "Hmm, looks like PID ($PID) is already toes up to daisies!"
+
+echo "Lets do this shit!"
+kill -15 $PID
+
+exit_if_dead $PID
+
+echo "How about some hot chocolate?!"
+kill -2 $PID
+
+exit_if_dead $PID
+
+echo "This is my BOOMstick!"
+kill -1 $PID
+
+exit_if_dead $PID
+
+echo "The damned thing won't die! HAAAADDOUUUUUKEEEEEEENNNNNN!!!!!"
+kill -9 $PID
+
+exit_if_dead $PID
+
+exit_with_error "Fuck it, I give up."
