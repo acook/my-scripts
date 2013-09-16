@@ -4,6 +4,8 @@
 # the current dir, called from a git callback, or install itself as a
 # git callback.
 
+require 'pathname'
+
 CTAGS = %x{which ctags}.chomp
 HOOKS = %w{ post-merge post-commit post-checkout }
 HOOKS_DIR = '.git/hooks'
@@ -18,7 +20,7 @@ def install
 end
 
 def run_tags(dir, run_in_background = false)
-  if File.executable?(CTAGS) and File.writable?(dir)
+  if File.executable?(CTAGS) and File.writable?(dir) then
     cmd = Array.new
     cmd << "find #{dir} -name \\\*.rb | #{CTAGS} -f #{dir}/tags -L -"
     cmd << '2>>/dev/null' unless $VERBOSE
@@ -27,7 +29,12 @@ def run_tags(dir, run_in_background = false)
     puts cmd if $VERBOSE
     system cmd
   else
-    $stderr.print "FAILED to write TAGS file to #{dir}\n"
+    unless File.executable? CTAGS then
+      warn "FATAL : ctags not found"
+    end
+    unless File.writable? dir then
+      warn "FATAL : directory `#{dir}' not writable"
+    end
   end
 end
 
@@ -45,5 +52,5 @@ if ARGV.first == '-i'
   install
 else
   puts 'running tags..' if $VERBOSE
-  run_tags Dir.pwd, HOOKS.include?(File.basename(__FILE__))
+  run_tags Dir.pwd #, HOOKS.include?(File.basename(__FILE__))
 end
