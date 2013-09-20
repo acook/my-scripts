@@ -2,7 +2,7 @@
 
 function esc () { echo -ne "\\033[$*"; }
 function watch_processes {
-echo -ne $(esc)1A$(esc)2K$(esc)5000D
+  echo -ne $(esc)1A$(esc)2K$(esc)5000D
   ps -a | grep $1 | grep $2 | grep -v watcher
 }
 
