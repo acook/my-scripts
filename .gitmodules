@@ -1,3 +1,9 @@
 [submodule "external/when-changed"]
 	path = external/when-changed
 	url = https://github.com/joh/when-changed.git
+[submodule "external/instant_install"]
+	path = external/instant_install
+	url = https://github.com/acook/instant_install
+[submodule "external/osinfo"]
+	path = external/osinfo
+	url = https://github.com/acook/osinfo.bash
