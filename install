@@ -16,7 +16,7 @@ echo Preparing external binaries...
 
 for f in external/*; do
   echo getting list of executables from $f
-  find $f -maxdepth 1 -type f -perm /a+x -exec cp -v {} $xbin_dir/ \;
+  find $f -maxdepth 2 -type f -perm /a+x -exec cp -v {} $xbin_dir/ \;
   echo copying executables to $xbin_dir
 done
 
