@@ -1,13 +1,30 @@
 #!/bin/bash
 # Just some stuff to make writing prompts easier
 
-# Set a Terminal's title with this, saves a lot of weird strings from the prompts
-function title { echo -ne "\\033]0;$*\007"; }
+# The ECMA-48 string terminator used by xterm
+# BEL (^G) would also work accoring to the spec
+function string_terminator () { esc "\\"; }
+ST=$(string_terminator)
+
+# escape for titles
+function esct () { esc "]$*$ST"; }
+
+# Pane Name (tmux only)
+function set_pane_name () { esc "k$*$ST"; }
+
+# Icon Name (xterm only?) and Window Title
+function set_icon_title () { esct "0;$*"; }
+
+# Set Xterm-tyle Window Title
+function set_window_title () { esct "2;$*"; }
+
 # Gets the present working directory and returns just the last 2 directories, good for shortening titles and prompts
 function PWD { tmp=${PWD%/*/*}; [ ${#tmp} -gt 0 -a "$tmp" != "$PWD" ] && echo ${PWD:${#tmp}+1} || echo $PWD; }
+
 # Does the same thing, but for any path
 function shortpath { tmp=${1%/*/*}; [ ${#tmp} -gt 0 -a "$tmp" != "$1" ] && echo ${1:${#tmp}+1} || echo $1; }
 
+# half assed function that tried to guess if we're on a VPS
 function remote_hostname {
     if [ `expr "\`uname -a\`" : '.*amzn.*'` != '0' ]; then
       echo $(fgb 37)`hostname`$(fgc 31):
@@ -20,8 +37,4 @@ function remote_hostname {
 #PS1='${debian_chroot:+($debian_chroot)}\033[00;31m\u@\h:\033[01;33m\w\033[00m\n\r\[\033[01;31m\$\033[00m\] '
 #PS1='\033]0;$(PWD)\007\033[00;31m\u@\h:\033[01;33m\w\033[00m\n\r\[\033[01;31m\$\033[00m\] '
 #PS1='\[$(title $(PWD))$(fgx 154)\]\w\n\[\r\]\[$(fgx 26)\]\$\[$(ansi_reset)\] '
-
-# Here's the old, outdated way of setting Terminal titles
-#function prompt_command { echo -ne "\033]0;$(PWD)\007" }
-#PROMPT_COMMAND="prompt_command"
 

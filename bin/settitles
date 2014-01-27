@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+# get some escape sequence helpers
+source bashrgb
+
+source prompt_helpers
+
+set_pane_name NAME
+set_icon_title ICON
+set_window_title TITLE
+
+#echo -ne "\033kNAME\033\\"
+#echo -ne "\033]0;ICON\033\\"
+#echo -ne "\033]2;TITLE\033\\"
+
+read -p "Press any key to continue..."
