@@ -2,34 +2,27 @@
 # Interact with system clipboards
 
 if ! [ -t 0 ]; then # there's something being piped in
-  operation="put"
-  read content
+  operation="set"
+  { content=$(< /dev/stdin); export content=$content; }
 else
-  operation="get"
+  operation="show"
 fi
 
-if [[ $1 == "get" ]]; then
-  operation="get"
-elif [[ $1 == "put" ]]; then
-  operation="put"
-fi
-
-while getopts “Tth” OPTION
+while getopts “wrh” OPTION
 do
   case $OPTION in
-    t) # tmux
-      use_tmux="true"
+    w) # set
+      operation="set"
       ;;
-    T) # tmux sync only
-      use_tmux="true"
-      synconly="true"
+    r) # show
+      operation="show"
       ;;
     h)
       echo "usage: access the system clipboard"
       echo "$(basename $0) get"
       echo "<command with output> | $(basename $0) put"
-      echo "-t    : sync tmux buffers and operate as normal"
-      echo "-T    : sync tmux buffers only (*no* I/O - no paste, no buffer changes)"
+      echo "-w    : set (write) clipboard contents to piped in data"
+      echo "-r    : show (read) clipboard conents"
       exit 0
       ;;
   esac
@@ -48,34 +41,16 @@ if ! [[ -n $(command -v pbcopy) ]]; then
 
 fi
 
-if [[ $operation == "get" ]]; then
-  if [ -n "$use_tmux" ]; then
-
-    tmux set-buffer -- "$(pbpaste)"
-
-    if [ -z "$synconly" ]; then
-      tmux paste-buffer
-    fi
-
-  else # no tmux
-    pbpaste
-  fi
-
-elif [[ $operation == "put" ]]; then
-
-  if [ -n "$use_tmux" ]; then
-    if [ -z "$synconly" ] && [ -n "$content" ]; then
-      tmux set-buffer -- "$content"
-    fi
-
-    tmux show-buffer | pbcopy
-
-  else # no tmux
+if [[ "$operation" == "show" ]]; then
+  pbpaste
+elif [[ "$operation" == "set" ]]; then
+  if [ -n "$content" ]; then
     echo "$content" | pbcopy
+  else
+    echo "no content piped in!"
+    exit 127
   fi
-
-
 else
   echo "sanity check failed!"
-  exit 127
+  exit 126
 fi
