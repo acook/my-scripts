@@ -2,10 +2,12 @@
 # defined colors to make it easier to output visually stimulating prompts and other messages
 
 # escapes the arguments you send it
-function esc () { echo -ne "\\033[$*"; }
+function esc () { echo -ne "\\033$*"; }
+export ESC="$(esc)"
 
 # ANSI escape for setting colors
-function c () { esc $1m; }
+function escc () { esc "[$1m"; }
+alias c=escc
 
 # bold
 function bold () { c 1; }
