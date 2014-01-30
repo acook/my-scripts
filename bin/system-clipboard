@@ -28,7 +28,7 @@ do
   esac
 done
 
-if ! [[ -n $(command -v pbcopy) ]]; then
+if [[ -z $(command -v pbcopy) ]]; then
 
   # try linux with X
   if [[ -n $(command -v xclip) ]]; then
