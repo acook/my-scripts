@@ -1,6 +1,8 @@
 #!/bin/bash
 # Just some stuff to make writing prompts easier
 
+source bashrgb
+
 # The ECMA-48 string terminator used by xterm
 # BEL (^G) would also work accoring to the spec
 function string_terminator () { esc "\\"; }
@@ -15,7 +17,7 @@ function set_pane_name () { esc "k$*$ST"; }
 # Icon Name (xterm only?) and Window Title
 function set_icon_title () { esct "0;$*"; }
 
-# Set Xterm-tyle Window Title
+# Set Xterm-style Window Title
 function set_window_title () { esct "2;$*"; }
 
 # Gets the present working directory and returns just the last 2 directories, good for shortening titles and prompts
