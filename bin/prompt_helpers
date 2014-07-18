@@ -21,10 +21,13 @@ function set_icon_title () { esct "0;$*"; }
 function set_window_title () { esct "2;$*"; }
 
 # Gets the present working directory and returns just the last 2 directories, good for shortening titles and prompts
-function PWD { tmp=${PWD%/*/*}; [ ${#tmp} -gt 0 -a "$tmp" != "$PWD" ] && echo ${PWD:${#tmp}+1} || echo $PWD; }
+function PWD { shortpath $PWD; }
 
 # Does the same thing, but for any path
 function shortpath { tmp=${1%/*/*}; [ ${#tmp} -gt 0 -a "$tmp" != "$1" ] && echo ${1:${#tmp}+1} || echo $1; }
+
+# horizonal line across the screen
+function fullline { printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -; }
 
 # half assed function that tried to guess if we're on a VPS
 function remote_hostname {

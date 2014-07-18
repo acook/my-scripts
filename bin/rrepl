@@ -1,0 +1,47 @@
+#!/usr/bin/env ruby
+
+module UREPL
+
+  def self.start
+    REPL.new.start
+  end
+
+  class REPL
+
+    def start
+      loop do
+        prompt ; r ; e ; p # l
+      end
+    end
+
+    def prompt
+      print "#{RUBY_VERSION} > "
+    end
+
+    def r
+      @expression = gets.chomp
+    end
+
+    def e
+      @result = eval @expression, TOPLEVEL_BINDING
+      @success = true
+    rescue Exception => error
+      exit if error.is_a? SystemExit
+      $repl_error = error
+      @success = false
+    end
+
+    def p
+      if @success then
+        puts "# => #{@result.inspect}"
+      else
+        warn "# #{$repl_error.class}: #{$repl_error.message}"
+      end
+    end
+  end
+
+end
+
+UREPL.start
+
+#loop { print '> ' ; x = gets ; r = eval(x, TOPLEVEL_BINDING) ; puts %Q{=> #{r.inspect}} }

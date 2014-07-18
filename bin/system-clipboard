@@ -1,11 +1,14 @@
 #!/usr/bin/env bash
 # Interact with system clipboards
+logger "$0 : STARTING CLIPBOARD ACCESS"
 
 if ! [ -t 0 ]; then # there's something being piped in
   operation="set"
   { content=$(< /dev/stdin); export content=$content; }
+  logger "$0 : FOUND CONTENT -- $content"
 else
   operation="show"
+  logger "$0 : DISPLAYING SYSTEM CLIPBOARD"
 fi
 
 while getopts “wrh” OPTION

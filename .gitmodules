@@ -7,3 +7,6 @@
 [submodule "external/osinfo"]
 	path = external/osinfo
 	url = https://github.com/acook/osinfo.bash
+[submodule "external/speedread"]
+	path = external/speedread
+	url = https://github.com/pasky/speedread.git
