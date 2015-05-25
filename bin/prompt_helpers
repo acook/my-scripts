@@ -45,3 +45,4 @@ function remote_hostname {
 #PS1='\033]0;$(PWD)\007\033[00;31m\u@\h:\033[01;33m\w\033[00m\n\r\[\033[01;31m\$\033[00m\] '
 #PS1='\[$(title $(PWD))$(fgx 154)\]\w\n\[\r\]\[$(fgx 26)\]\$\[$(ansi_reset)\] '
 
+#PS1='\[$(set_window_title $(PWD))\]$(remote_hostname)\[$(fgx 154)\]\w$(git_branch)\[$(fgx 154)\]$(git_dirty)\n\[\r\]\[$(fgx 26)\]\$\[$(ansi_reset)\] '

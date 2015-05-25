@@ -49,6 +49,7 @@ if [ $? -eq 0 ]; then
   fi
 
   # for git_branch (branch name)
+  # todo: display "merge" in the middle of a merge instead of the branch
   git_branch="$(git symbolic-ref -q --short HEAD -- || git rev-parse --short HEAD --)"
 
   # finalized git string
@@ -150,4 +151,3 @@ else
   fi
 fi
 
-#PS1='\[$(set_window_title $(PWD))\]$(remote_hostname)\[$(fgx 154)\]\w$(git_branch)\[$(fgx 154)\]$(git_dirty)\n\[\r\]\[$(fgx 26)\]\$\[$(ansi_reset)\] '
