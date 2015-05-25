@@ -1,4 +1,3 @@
-
 function __xeiprompt {
 LAST_COMMAND_EXIT_STATUS=$?
 setopt interactivecomments
@@ -50,14 +49,7 @@ if [ $? -eq 0 ]; then
   fi
 
   # for git_branch (branch name)
-  #git_head="$(cat .git/HEAD)"
-  git_head="$(git rev-parse --short HEAD --)"
-
-  if [[ "$git_head" == "ref:"* ]]; then
-    git_branch=${git_head##*/}
-  else
-    git_branch=${git_head:0:7}
-  fi
+  git_branch="$(git symbolic-ref -q --short HEAD -- || git rev-parse --short HEAD --)"
 
   # finalized git string
   git_string=" $GIT_SYM_BRANCH $git_branch [$git_summary]"
@@ -132,15 +124,16 @@ time_string=" $TIME_SYM_CLOCK $(date "+%m.%d|%H:%M")"
 # git_string
 # status_string
 
-#~/Projects on master [4M:2A:1D]                          0 4.20 X 255
+#~/Projects & master [4M:2A:1D]                         X 255 0 4.20|5:30
 #$ _
 
 if [ -n "$ZSH_VERSION" ]; then
-  __ansi_up="$(echo -ne "\\033[1A")"
-  __ansi_down="$(echo -ne "\\033[1B")"
-  export RPROMPT='%{$__ansi_up%}$status_string$time_string%{$__ansi_down%}'
-  export PROMPT='$cwd_string$git_string
-\$  '
+  ansi_esc="$(echo -ne "\\033[")"
+  ansi_up='%{${ansi_esc}1A%}'
+  ansi_down='%{${ansi_esc}1B%}'
+  export RPROMPT="$ansi_up$status_string$time_string$ansi_down"
+  export PROMPT="$cwd_string$git_string
+\$  "
 else
   export PS1='$cwd_string$git_string  -- $time_string$status_string'
 fi
