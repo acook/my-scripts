@@ -130,10 +130,11 @@ time_string=" $TIME_SYM_CLOCK $(date "+%m.%d|%H:%M")"
 if [ -n "$ZSH_VERSION" ]; then
   ansi_esc="$(echo -ne "\\033[")"
   ansi_up='%{${ansi_esc}1A%}'
-  ansi_down='%{${ansi_esc}1B%}'
+  ansi_down='%{${ansi_esc}1B %}'
+  newline=$'\n'
+
   export RPROMPT="$ansi_up$status_string$time_string$ansi_down"
-  export PROMPT="$cwd_string$git_string
-\$  "
+  export PROMPT="$cwd_string$git_string$newline\$ "
 else
   export PS1='$cwd_string$git_string  -- $time_string$status_string'
 fi
