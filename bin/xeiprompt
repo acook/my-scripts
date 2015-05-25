@@ -1,0 +1,159 @@
+
+function __xeiprompt {
+LAST_COMMAND_EXIT_STATUS=$?
+setopt interactivecomments
+
+SYM_BULLET=•⦿
+SYM_EMPTY=∅
+
+GIT_SYM_SEP=:
+GIT_SYM_ADD=✚
+GIT_SYM_MOD=Δ
+GIT_SYM_DEL=†
+GIT_SYM_BRANCH=
+
+STATUS_SYM_SUCCESS=✔
+STATUS_SYM_FAILURE=✖
+
+CWD_ELLIPSIS=…
+
+TIME_SYM_CLOCK=☉
+
+#cd $0
+#source bashrgb
+#source prompt_helpers
+
+if [ -n "$ZSH_VERSION" ]; then
+  cwd_read_array='-A'
+elif [ -n "$BASH_VERSION" ]; then
+  cwd_read_array='-a'
+else
+fi
+
+# for git_string
+git_root="$(git rev-parse --git-dir 2> /dev/null)"
+if [ $? -eq 0 ]; then
+  git diff-index --quiet HEAD --
+  git_any=$?
+
+  # for git_summary (status summary)
+  if (( $git_any != 0 )); then
+    git_status="$(git diff-index --name-status HEAD --)"
+
+    git_added="$(\grep -c "^A" <<< $git_status)"
+    git_modified="$(\grep -c "^M" <<< $git_status)"
+    git_deleted="$(\grep -c "^D" <<< $git_status)"
+
+    git_summary="$GIT_SYM_ADD$git_added$GIT_SYM_SEP$GIT_SYM_MOD$git_modified$GIT_SYM_SEP$GIT_SYM_DEL$git_deleted"
+  else
+    git_summary="clean"
+  fi
+
+  # for git_branch (branch name)
+  #git_head="$(cat .git/HEAD)"
+  git_head="$(git rev-parse --short HEAD --)"
+
+  if [[ "$git_head" == "ref:"* ]]; then
+    git_branch=${git_head##*/}
+  else
+    git_branch=${git_head:0:7}
+  fi
+
+  # finalized git string
+  git_string=" $GIT_SYM_BRANCH $git_branch [$git_summary]"
+else
+  git_string=""
+fi
+
+# for status_string
+if [ "$LAST_COMMAND_EXIT_STATUS" = "0" ]; then
+  status_string=" $STATUS_SYM_SUCCESS"
+else
+  status_string=" $STATUS_SYM_FAILURE $LAST_COMMAND_EXIT_STATUS"
+fi
+
+# for cwd_simple
+function cwd_simple {
+  if [[ "$PWD" == "$HOME"* ]]; then
+    cwd_prefix='~/'
+    cwd_path="${PWD#$HOME}"
+  else
+    cwd_prefix='/'
+    cwd_path="$PWD"
+  fi
+
+  cwd_max_length="$(($COLUMNS / 3))"
+  if [ "${#cwd_path}" -gt "$cwd_max_length" ]; then
+    cwd_simple="$cwd_prefix$CWD_ELLIPSIS${cwd_path: -$cwd_max_length}"
+  else
+    cwd_simple="$PWD"
+  fi
+  echo -ne $cwd_simple
+}
+
+# for cwd_pretty
+if [[ "$PWD" == "$HOME"* ]]; then
+  cwd_prefix='~'
+  cwd_path="${PWD#$HOME}"
+else
+  cwd_prefix=''
+  cwd_path=$PWD
+fi
+
+if [ "${#cwd_path}" -gt "$(($COLUMNS / 3))" ]; then
+
+  IFS='/' read -r $cwd_read_array cwd_array <<< "$cwd_path"
+  cwd_significant="$cwd_array[-2]/$cwd_array[-1]"
+  cwd_accumulator=""
+  for i in "${cwd_array[@]: 0:-2}"; do
+    if [ "${#i}" -gt "3" ]; then
+      cwd_accumulator="$cwd_accumulator/${i:0:2}$CWD_ELLIPSIS"
+    elif [ "${#i}" -eq "0" ]; then
+      # the first element is usually empty, so ignore it
+      # since arrays in zsh are 1-index and bash being 0-index
+      # this ensures compatibility
+    else
+      cwd_accumulator="$cwd_accumulator/$i"
+    fi
+  done
+
+  cwd_string="$cwd_prefix$cwd_accumulator/$cwd_significant"
+else
+  cwd_string="$cwd_prefix$cwd_path"
+fi
+
+# for time_string
+time_string=" $TIME_SYM_CLOCK $(date "+%m.%d|%H:%M")"
+
+# SEGMENTS
+# cwd_string
+# cwd_simple
+# time_string
+# git_string
+# status_string
+
+#~/Projects on master [4M:2A:1D]                          0 4.20 X 255
+#$ _
+
+if [ -n "$ZSH_VERSION" ]; then
+  __ansi_up="$(echo -ne "\\033[1A")"
+  __ansi_down="$(echo -ne "\\033[1B")"
+  export RPROMPT='%{$__ansi_up%}$status_string$time_string%{$__ansi_down%}'
+  export PROMPT='$cwd_string$git_string
+\$  '
+else
+  export PS1='$cwd_string$git_string  -- $time_string$status_string'
+fi
+}
+
+if [ -n "$ZSH_VERSION" ]; then
+  if [[ ! ${precmd_functions[(r)__xeiprompt]} == __xeiprompt ]]; then
+    precmd_functions+=(__xeiprompt)
+  fi
+else
+  if [[ ! "$PROMPT_COMMAND" == *__xeiprompt* ]]; then
+    PROMPT_COMMAND='__xeiprompt;'$'\n'"$PROMPT_COMMAND"
+  fi
+fi
+
+#PS1='\[$(set_window_title $(PWD))\]$(remote_hostname)\[$(fgx 154)\]\w$(git_branch)\[$(fgx 154)\]$(git_dirty)\n\[\r\]\[$(fgx 26)\]\$\[$(ansi_reset)\] '
