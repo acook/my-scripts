@@ -65,25 +65,6 @@ else
   status_string=" $STATUS_SYM_FAILURE $LAST_COMMAND_EXIT_STATUS"
 fi
 
-# for cwd_simple
-function cwd_simple {
-  if [[ "$PWD" == "$HOME"* ]]; then
-    cwd_prefix='~/'
-    cwd_path="${PWD#$HOME}"
-  else
-    cwd_prefix='/'
-    cwd_path="$PWD"
-  fi
-
-  cwd_max_length="$(($COLUMNS / 3))"
-  if [ "${#cwd_path}" -gt "$cwd_max_length" ]; then
-    cwd_simple="$cwd_prefix$CWD_ELLIPSIS${cwd_path: -$cwd_max_length}"
-  else
-    cwd_simple="$PWD"
-  fi
-  echo -ne $cwd_simple
-}
-
 # for cwd_pretty
 if [[ "$PWD" == "$HOME"* ]]; then
   cwd_prefix='~'
@@ -120,7 +101,6 @@ time_string=" $TIME_SYM_CLOCK $(date "+%m.%d|%H:%M")"
 
 # SEGMENTS
 # cwd_string
-# cwd_simple
 # time_string
 # git_string
 # status_string
