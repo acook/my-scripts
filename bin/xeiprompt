@@ -14,6 +14,7 @@ GIT_SYM_SEP=" $SYM_LSEP_ALT "
 GIT_SYM_ADD=✚
 GIT_SYM_MOD=Δ
 GIT_SYM_DEL=†
+GIT_SYM_UNT=‽
 GIT_SYM_BRANCH=
 
 STATUS_SYM_SUCCESS=✔
@@ -25,9 +26,9 @@ TIME_SYM_CLOCK=☉
 
 if [ -n "$ZSH_VERSION" ]; then
   setopt interactivecomments
-  cwd_read_array='-A'
+  read_array='-A'
 else
-  cwd_read_array='-a'
+  read_array='-a'
 fi
 
 # for git_string
@@ -37,16 +38,35 @@ if [ $? -eq 0 ]; then
   git_any=$?
 
   # for git_summary (status summary)
-  # todo: only display segments with counts greater than 0
-  # todo: add other states - untracked, missing
   if (( $git_any != 0 )); then
-    git_status="$(git diff-index --name-status HEAD --)"
+    git_status="$(git status --porcelain)"
 
-    git_added="$(\grep -c "^A" <<< $git_status)"
-    git_modified="$(\grep -c "^M" <<< $git_status)"
-    git_deleted="$(\grep -c "^D" <<< $git_status)"
+    git_added="$(\grep -c "^A" <<< "$git_status")"
+    git_modified="$(\grep -c "^.M" <<< "$git_status")"
+    git_deleted="$(\grep -c "^.D" <<< "$git_status")"
+    git_untracked="$(\grep -c "^.?" <<< "$git_status")"
 
-    git_summary=" $GIT_SYM_ADD$git_added$GIT_SYM_SEP$GIT_SYM_MOD$git_modified$GIT_SYM_SEP$GIT_SYM_DEL$git_deleted"
+    git_accumulator=""
+    if [ $git_added -gt 0 ]; then
+      git_accumulator+="$GIT_SYM_ADD$git_added "
+    fi
+    if [ $git_modified -gt 0 ]; then
+      git_accumulator+="$GIT_SYM_ADD$git_modified "
+    fi
+    if [ $git_deleted -gt 0 ]; then
+      git_accumulator+="$GIT_SYM_DEL$git_deleted "
+    fi
+    if [ $git_untracked -gt 0 ]; then
+      git_accumulator+="$GIT_SYM_UNT$git_untracked"
+    fi
+
+    set -- $git_accumulator
+    git_summary=$1
+    shift
+    for i in $*; do
+       git_summary+="$GIT_SYM_SEP$i"
+    done
+    git_summary=" $git_summary"
   else
     #git_summary="$SYM_LSEP_ALT $SYM_EMPTY"
     git_summary=""
@@ -80,7 +100,7 @@ fi
 
 if [ "${#cwd_path}" -gt "$(($COLUMNS / 3))" ]; then
 
-  IFS='/' read -r $cwd_read_array cwd_array <<< "$cwd_path"
+  IFS='/' read -r $read_array cwd_array <<< "$cwd_path"
   cwd_significant="$cwd_array[-2]/$cwd_array[-1]"
   cwd_accumulator=""
   for i in "${cwd_array[@]: 0:-2}"; do
