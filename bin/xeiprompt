@@ -32,19 +32,18 @@ else
 fi
 
 # for git_string
-git_root="$(git rev-parse --git-dir 2> /dev/null)"
+git_status="$(git status --porcelain )"
 if [ $? -eq 0 ]; then
   git diff-index --quiet HEAD --
   git_any=$?
 
   # for git_summary (status summary)
   if (( $git_any != 0 )); then
-    git_status="$(git status --porcelain)"
 
-    git_added="$(\grep -c "^A" <<< "$git_status")"
-    git_modified="$(\grep -c "^.M" <<< "$git_status")"
-    git_deleted="$(\grep -c "^.D" <<< "$git_status")"
-    git_untracked="$(\grep -c "^.?" <<< "$git_status")"
+    git_added="$(\grep -c "^.\?A" <<< "$git_status")"
+    git_modified="$(\grep -c "^.\?M" <<< "$git_status")"
+    git_deleted="$(\grep -c "^.\?D" <<< "$git_status")"
+    git_untracked="$(\grep -c "^.\??" <<< "$git_status")"
 
     git_accumulator=""
     if [ $git_added -gt 0 ]; then
@@ -66,7 +65,7 @@ if [ $? -eq 0 ]; then
     for i in $*; do
        git_summary+="$GIT_SYM_SEP$i"
     done
-    git_summary=" $git_summary"
+    git_summary=" ${git_summary% }"
   else
     #git_summary="$SYM_LSEP_ALT $SYM_EMPTY"
     git_summary=""
