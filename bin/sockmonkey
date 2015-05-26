@@ -30,6 +30,9 @@ function establish_proxy {
   unable to connect :(
   make sure another process isn't using port $monitor_port
   "
+  echo "restarting in 3 seconds, hit control-c to cancel"
+  sleep 3
+  establish_proxy
 }
 function disable_proxy {
   echo "disabling system proxy..."
