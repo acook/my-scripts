@@ -2,10 +2,15 @@ function __xeiprompt {
 LAST_COMMAND_EXIT_STATUS=$?
 setopt interactivecomments
 
+SYM_LSEP=$'\ue0b0'
+SYM_LSEP_ALT=$'\ue0b1'
+SYM_RSEP=$'\ue0b2'
+SYM_RSEP_ALT=$'\ue0b3'
+
 SYM_BULLET=•⦿
 SYM_EMPTY=∅
 
-GIT_SYM_SEP=:
+GIT_SYM_SEP=" $SYM_LSEP_ALT "
 GIT_SYM_ADD=✚
 GIT_SYM_MOD=Δ
 GIT_SYM_DEL=†
@@ -53,7 +58,7 @@ if [ $? -eq 0 ]; then
   git_branch="$(git symbolic-ref -q --short HEAD -- || git rev-parse --short HEAD --)"
 
   # finalized git string
-  git_string=" $GIT_SYM_BRANCH $git_branch [$git_summary]"
+  git_string=" $GIT_SYM_BRANCH $git_branch $git_summary"
 else
   git_string=""
 fi
@@ -97,7 +102,7 @@ else
 fi
 
 # for time_string
-time_string=" $TIME_SYM_CLOCK $(date "+%m.%d|%H:%M")"
+time_string=" $TIME_SYM_CLOCK $(date "+%m.%d $SYM_RSEP_ALT %H:%M")"
 
 # SEGMENTS
 # cwd_string
@@ -109,13 +114,25 @@ time_string=" $TIME_SYM_CLOCK $(date "+%m.%d|%H:%M")"
 #$ _
 
 if [ -n "$ZSH_VERSION" ]; then
-  ansi_esc="$(echo -ne "\\033[")"
-  ansi_up='%{${ansi_esc}1A%}'
-  ansi_down='%{${ansi_esc}1B %}'
+  ansi_up=$'%{\e[1A%}'
+  ansi_down=$'%{\e[1B %}'
   newline=$'\n'
 
-  export RPROMPT="$ansi_up$status_string$time_string$ansi_down"
-  export PROMPT="$cwd_string$git_string$newline\$ "
+  bkg_grey=$'%{\e[48;5;234m%}'
+  fg_grey=$'%{\e[38;5;234m%}'
+  bkg_lime=$'%{\e[48;5;154m%}'
+  fg_lime=$'%{\e[38;5;154m%}'
+  bkg_berry=$'%{\e[48;5;26m%}'
+  fg_berry=$'%{\e[38;5;26m%}'
+  reset=$'%{\e[0m%}'
+
+  psep=$' $bkg_grey$fg_lime$SYM_LSEP$fg_berry'
+  gsep=$' $reset$fg_grey$SYM_LSEP$fg_berry'
+  tsep=$' $SYM_RSEP$bkg_grey$fg_lime'
+  ssep=$' $reset$fg_berry$SYM_RSEP$bkg_berry$fg_grey'
+
+  export PROMPT="$bkg_lime$fg_grey$cwd_string$psep$git_string$gsep$newline\$ $reset"
+  export RPROMPT="$ansi_up$ssep$status_string$tsep$time_string$reset$ansi_down"
 else
   export PS1='$cwd_string$git_string  -- $time_string$status_string'
 fi
