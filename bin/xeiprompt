@@ -43,7 +43,7 @@ if [ $? -eq 0 ]; then
     git_added="$(\grep -c "^.\?A" <<< "$git_status")"
     git_modified="$(\grep -c "^.\?M" <<< "$git_status")"
     git_deleted="$(\grep -c "^.\?D" <<< "$git_status")"
-    git_untracked="$(\grep -c "^.\??" <<< "$git_status")"
+    git_untracked="$(\grep -c "^??" <<< "$git_status")"
 
     git_accumulator=""
     if [ $git_added -gt 0 ]; then
