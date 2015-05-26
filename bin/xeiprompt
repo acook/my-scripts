@@ -50,7 +50,7 @@ if [ $? -eq 0 ]; then
       git_accumulator+="$GIT_SYM_ADD$git_added "
     fi
     if [ $git_modified -gt 0 ]; then
-      git_accumulator+="$GIT_SYM_ADD$git_modified "
+      git_accumulator+="$GIT_SYM_MOD$git_modified "
     fi
     if [ $git_deleted -gt 0 ]; then
       git_accumulator+="$GIT_SYM_DEL$git_deleted "
