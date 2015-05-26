@@ -7,7 +7,8 @@ SYM_LSEP_ALT=$'\ue0b1'
 SYM_RSEP=$'\ue0b2'
 SYM_RSEP_ALT=$'\ue0b3'
 
-SYM_BULLET=•⦿
+SYM_BULLET=•
+SYM_CIRCLE=⦿
 SYM_EMPTY=∅
 
 GIT_SYM_SEP=" $SYM_LSEP_ALT "
@@ -41,6 +42,8 @@ if [ $? -eq 0 ]; then
   git_any=$?
 
   # for git_summary (status summary)
+  # todo: only display segments with counts greater than 0
+  # todo: add other states - untracked, missing
   if (( $git_any != 0 )); then
     git_status="$(git diff-index --name-status HEAD --)"
 
@@ -48,9 +51,10 @@ if [ $? -eq 0 ]; then
     git_modified="$(\grep -c "^M" <<< $git_status)"
     git_deleted="$(\grep -c "^D" <<< $git_status)"
 
-    git_summary="$GIT_SYM_ADD$git_added$GIT_SYM_SEP$GIT_SYM_MOD$git_modified$GIT_SYM_SEP$GIT_SYM_DEL$git_deleted"
+    git_summary=" $GIT_SYM_ADD$git_added$GIT_SYM_SEP$GIT_SYM_MOD$git_modified$GIT_SYM_SEP$GIT_SYM_DEL$git_deleted"
   else
-    git_summary="clean"
+    #git_summary="$SYM_LSEP_ALT $SYM_EMPTY"
+    git_summary=""
   fi
 
   # for git_branch (branch name)
@@ -58,7 +62,7 @@ if [ $? -eq 0 ]; then
   git_branch="$(git symbolic-ref -q --short HEAD -- || git rev-parse --short HEAD --)"
 
   # finalized git string
-  git_string=" $GIT_SYM_BRANCH $git_branch $git_summary"
+  git_string=" $GIT_SYM_BRANCH $git_branch$git_summary"
 else
   git_string=""
 fi
