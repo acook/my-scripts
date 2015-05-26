@@ -59,13 +59,11 @@ if [ $? -eq 0 ]; then
       git_accumulator+="$GIT_SYM_UNT$git_untracked"
     fi
 
-    set -- $git_accumulator
-    git_summary=$1
-    shift
-    for i in $*; do
+    git_summary=''
+    for i in $git_accumulator; do
        git_summary+="$GIT_SYM_SEP$i"
     done
-    git_summary=" ${git_summary% }"
+    git_summary="${git_summary% }"
   else
     #git_summary="$SYM_LSEP_ALT $SYM_EMPTY"
     git_summary=""
