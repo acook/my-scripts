@@ -1,6 +1,5 @@
 function __xeiprompt {
 LAST_COMMAND_EXIT_STATUS=$?
-setopt interactivecomments
 
 SYM_LSEP=$'\ue0b0'
 SYM_LSEP_ALT=$'\ue0b1'
@@ -24,15 +23,11 @@ CWD_ELLIPSIS=…
 
 TIME_SYM_CLOCK=☉
 
-#cd $0
-#source bashrgb
-#source prompt_helpers
-
 if [ -n "$ZSH_VERSION" ]; then
+  setopt interactivecomments
   cwd_read_array='-A'
-elif [ -n "$BASH_VERSION" ]; then
-  cwd_read_array='-a'
 else
+  cwd_read_array='-a'
 fi
 
 # for git_string
@@ -95,6 +90,7 @@ if [ "${#cwd_path}" -gt "$(($COLUMNS / 3))" ]; then
       # the first element is usually empty, so ignore it
       # since arrays in zsh are 1-index and bash being 0-index
       # this ensures compatibility
+      false
     else
       cwd_accumulator="$cwd_accumulator/$i"
     fi
@@ -138,7 +134,22 @@ if [ -n "$ZSH_VERSION" ]; then
   export PROMPT="$bkg_lime$fg_grey$cwd_string$psep$git_string$gsep$newline\$ $reset"
   export RPROMPT="$ansi_up$ssep$status_string$tsep$time_string$reset$ansi_down"
 else
-  export PS1='$cwd_string$git_string  -- $time_string$status_string'
+  newline=$'\n'
+
+  bkg_grey=$'\e[48;5;234m'
+  fg_grey=$'\e[38;5;234m'
+  bkg_lime=$'\e[48;5;154m'
+  fg_lime=$'\e[38;5;154m'
+  bkg_berry=$'\e[48;5;26m'
+  fg_berry=$'\e[38;5;26m'
+  reset=$'\e[0m'
+
+  psep=' \[$bkg_grey$fg_lime\]$SYM_LSEP\[$fg_berry\]'
+  gsep=' \[$reset$fg_grey\]$SYM_LSEP\[$fg_berry\]'
+  tsep=' $SYM_RSEP\[$bkg_grey$fg_lime\]'
+  ssep=' \[$reset$fg_berry\]$SYM_RSEP\[$bkg_berry$fg_grey\]'
+
+  export PS1="\[$bkg_lime$fg_grey\]$cwd_string$psep$git_string$gsep$ssep$status_string$tsep$time_string \[$reset$fg_grey\]$SYM_LSEP$newline\[$fg_berry\]\$ \[$reset\]"
 fi
 }
 
