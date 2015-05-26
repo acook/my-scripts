@@ -32,7 +32,7 @@ else
 fi
 
 # for git_string
-git_status="$(git status --porcelain )"
+git_status="$(git status --porcelain 2> /dev/null)"
 if [ $? -eq 0 ]; then
   git diff-index --quiet HEAD --
   git_any=$?
