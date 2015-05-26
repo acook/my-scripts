@@ -1,4 +1,4 @@
-#!/usr/bin/zsh
+#!/usr/bin/env $SHELL
 
 LAST_COMMAND_EXIT_STATUS=$?
 
