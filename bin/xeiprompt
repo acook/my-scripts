@@ -1,4 +1,5 @@
-function __xeiprompt {
+#!/usr/bin/zsh
+
 LAST_COMMAND_EXIT_STATUS=$?
 
 SYM_LSEP=$'\ue0b0'
@@ -160,6 +161,9 @@ else
 
   export PS1="\[$bkg_lime$fg_grey\]$cwd_string$psep$git_string$gsep$ssep$status_string$tsep$time_string \[$reset$fg_grey\]$SYM_LSEP$newline\[$fg_berry\]\$ \[$reset\]"
 fi
+
+function __xeiprompt {
+  source ~/bin/xeiprompt
 }
 
 if [ -n "$ZSH_VERSION" ]; then
