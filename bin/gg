@@ -2,14 +2,14 @@
 
 RUNNER=$_
 THIS=$(basename $0)
-GOPATH=$(pwd -P 2>/dev/null || command pwd)
 GO_CONFIG=${GO_CONFIG:-".go"}
+export GOPATH=$(pwd -P 2>/dev/null || command pwd)
 
 warn() { echo "$@" 1>&2; }
 
 # iterate upwards over dirs until we find a config
 while [ ! -e "$GOPATH/$GO_CONFIG" ]; do
-  GOPATH=${GOPATH%/*}
+  export GOPATH=${GOPATH%/*}
   if [ "$GOPATH" = "" ]; then
     warn "$THIS: no $GO_CONFIG config found using PWD instead"
     export GOPATH=$(pwd)
