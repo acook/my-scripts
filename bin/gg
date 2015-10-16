@@ -1,19 +1,37 @@
 #!/usr/bin/env bash
 
-THIS=$_
+RUNNER=$_
 GO_CONFIG="./.go"
+THIS=$(basename $0)
 
 # check for the presence of a config
 if [ -a $GO_CONFIG ]; then
   # slurp the contents into a variable
   export GOPATH=$(<$GO_CONFIG)
 else
-  echo "no ./.go config found using PWD instead"
+  echo "$THIS: no ./.go config found using PWD instead"
   export GOPATH=$(pwd)
 fi
 
 # if this script is being invoked directly
-if [[ $THIS == $0 ]]; then
-  # then run go with all the arguments we were passed
-  go $*
+if [[ $RUNNER == $0 ]]; then
+  if [[ "dir" == $1 ]]; then
+    if [ -z "$3" ]; then
+      NAME="direct"
+    else
+      NAME="$3"
+    fi
+
+    DIR="$GOPATH/src/github.com/acook/$2"
+    SYM="$GOPATH/$NAME"
+
+    echo "$THIS: creating directory \"$DIR\""
+    mkdir -p "$DIR"
+
+    echo "$THIS: creating symlink \"$SYM\""
+    ln -s "$DIR" "$SYM"
+  else
+    # run go with all the arguments we were passed
+    go $*
+  fi
 fi
