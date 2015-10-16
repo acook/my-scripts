@@ -1,7 +1,12 @@
 #!/usr/bin/env bash
 
-RUNNER=$_
-THIS=$(basename $0)
+if [[ $_ == $0 ]]; then
+  RUNNER=1
+  THIS=$(basename $0)
+else
+  THIS="gg"
+fi
+
 GO_CONFIG=${GO_CONFIG:-".go"}
 export GOPATH=$(pwd -P 2>/dev/null || command pwd)
 
@@ -28,7 +33,7 @@ fi
 export GOBIN="$GOPATH/bin"
 
 # if this script is being invoked directly
-if [[ $RUNNER == $0 ]]; then
+if [[ "$RUNNER" == 1 ]]; then
   if [[ "dir" == $1 ]]; then
     if [ -z "$3" ]; then
       NAME="direct"
@@ -48,5 +53,11 @@ if [[ $RUNNER == $0 ]]; then
     warn
     # run go with all the arguments we were passed
     go "$@"
+
+    if [ $? -eq 0 ]; then
+      warn "$THIS: $1 command completed successfully"
+    else
+      warn "$THIS: $1 command exited with an error code - $?"
+    fi
   fi
 fi
