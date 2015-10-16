@@ -1,17 +1,31 @@
 #!/usr/bin/env bash
 
 RUNNER=$_
-GO_CONFIG="./.go"
 THIS=$(basename $0)
+GOPATH=$(pwd -P 2>/dev/null || command pwd)
+GO_CONFIG=${GO_CONFIG:-".go"}
+
+warn() { echo "$@" 1>&2; }
+
+# iterate upwards over dirs until we find a config
+while [ ! -e "$GOPATH/$GO_CONFIG" ]; do
+  GOPATH=${GOPATH%/*}
+  if [ "$GOPATH" = "" ]; then
+    warn "$THIS: no $GO_CONFIG config found using PWD instead"
+    export GOPATH=$(pwd)
+    break
+  fi
+done
+
+warn "$THIS: using GOPATH=$GOPATH"
 
 # check for the presence of a config
-if [ -a $GO_CONFIG ]; then
-  # slurp the contents into a variable
-  export GOPATH=$(<$GO_CONFIG)
-else
-  echo "$THIS: no ./.go config found using PWD instead"
-  export GOPATH=$(pwd)
+if [ -a "$GOPATH/$GO_CONFIG" ]; then
+  # just source it, no its not safe
+  source "$GOPATH/$GO_CONFIG"
 fi
+
+export GOBIN="$GOPATH/bin"
 
 # if this script is being invoked directly
 if [[ $RUNNER == $0 ]]; then
@@ -25,13 +39,14 @@ if [[ $RUNNER == $0 ]]; then
     DIR="$GOPATH/src/github.com/acook/$2"
     SYM="$GOPATH/$NAME"
 
-    echo "$THIS: creating directory \"$DIR\""
+    warn "$THIS: creating directory \"$DIR\""
     mkdir -p "$DIR"
 
-    echo "$THIS: creating symlink \"$SYM\""
+    warn "$THIS: creating symlink \"$SYM\""
     ln -s "$DIR" "$SYM"
   else
+    warn
     # run go with all the arguments we were passed
-    go $*
+    go "$@"
   fi
 fi
