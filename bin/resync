@@ -1,0 +1,58 @@
+#!/bin/bash
+
+# Thanks to Ian Greenleaf and his script upon which this was based: https://gist.github.com/iangreenleaf/279849
+# Thanks to Hanz Ginzel for reminding me every time how to set defaults in bash: http://stackoverflow.com/a/28085062/1255156
+
+THIS=$(basename ${0:-resync})
+ARGN=2
+
+RSYNC=${RSYNC:-"\rsync"}
+RSYNC_OPTS=${RSYNC_OPTS:-"-avzP"}
+MAX_RETRIES=${MAX_RETRIES:-50}
+
+function usage() {
+  echo "resync - an rsync wrapper with retries"
+  echo "usage: $THIS [source] [destination]"
+  echo "    set SSH_OPTS if you need anything special done with ssh. default: ($SSH_OPTS)"
+  echo "    set MAX_RETRIES to change the number of retries. default: ($MAX_RETRIES)"
+  echo "    set RSYNC if you have another rsync-like command. default: ($RSYNC)"
+  echo "    set RSYNC_OPTS if you want to change the options. default: ($RSYNC_OPTS)"
+  echo "examples:"
+  echo "    $THIS /mnt/shared/podcast.wav ~/audio/todays_podcast.wav"
+  echo "    SSH_OPTS=\"-p 9999\" $THIS me@example.org:/home/me/bigfile.bin ~/downloads/"
+  echo "    RSYNC_OPTS=\"-P\" $THIS /tmp/backup.lzma remote.example.com:/bkp/"
+}
+
+if [ $# -lt $ARGN ]; then
+  echo 1>&2 "$THIS: not enough arguments (got $# expected $ARGN) - needs both source and destination"
+  echo
+  usage
+  exit 2
+elif [ $# -gt $ARGN ]; then
+  echo 1>&2 "$THIS: too many arguments (got $# expected $ARGN) - only needs source and destination"
+  echo
+  usage
+  exit 3
+fi
+
+# Trap interrupts and exit instead of continuing the loop
+trap "echo $THIS: Canceled!; exit;" SIGINT SIGTERM
+
+# the iteration tracker
+i=0
+# for the $? condition
+false
+
+while [ $? -ne 0 -a $i -lt $MAX_RETRIES ]; do
+ if [ $i -gt 0 ]; then
+   echo "$THIS: Retrying..."
+ fi
+ i=$(($i+1))
+ $RSYNC $RSYNC_OPTS -e "ssh $SSH_OPTS" "$1" "$2"
+done
+
+if [ $i -eq $MAX_RETRIES ]; then
+  echo "$THIS: Hit maximum number of retries, giving up."
+else
+  echo "$THIS: Success!"
+fi
