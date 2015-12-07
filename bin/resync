@@ -6,9 +6,10 @@
 THIS=$(basename ${0:-resync})
 ARGN=2
 
-RSYNC=${RSYNC:-"\rsync"}
+RSYNC=${RSYNC:-"rsync"}
 RSYNC_OPTS=${RSYNC_OPTS:-"-avzP"}
 MAX_RETRIES=${MAX_RETRIES:-50}
+DELAY=${DELAY:-1}
 
 function usage() {
   echo "resync - an rsync wrapper with retries"
@@ -17,6 +18,7 @@ function usage() {
   echo "    set MAX_RETRIES to change the number of retries. default: ($MAX_RETRIES)"
   echo "    set RSYNC if you have another rsync-like command. default: ($RSYNC)"
   echo "    set RSYNC_OPTS if you want to change the options. default: ($RSYNC_OPTS)"
+  echo "    set DELAY to control how long between retries. default: ($DELAY)"
   echo "examples:"
   echo "    $THIS /mnt/shared/podcast.wav ~/audio/todays_podcast.wav"
   echo "    SSH_OPTS=\"-p 9999\" $THIS me@example.org:/home/me/bigfile.bin ~/downloads/"
@@ -46,6 +48,7 @@ false
 while [ $? -ne 0 -a $i -lt $MAX_RETRIES ]; do
  if [ $i -gt 0 ]; then
    echo "$THIS: Retrying..."
+   sleep $DELAY
  fi
  i=$(($i+1))
  $RSYNC $RSYNC_OPTS -e "ssh $SSH_OPTS" "$1" "$2"
