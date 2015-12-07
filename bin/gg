@@ -57,7 +57,7 @@ if [[ "$RUNNER" == 1 ]]; then
     if [ $? -eq 0 ]; then
       warn "$THIS: $1 command completed successfully"
     else
-      warn "$THIS: $1 command exited with an error code - $?"
+      warn "$THIS: $1 command exited with an error code ($?)"
     fi
   fi
 fi
