@@ -1,0 +1,24 @@
+#!/usr/bin/env ruby
+
+command = ARGV.first
+
+if command.include? 'd' then
+  count, sides = command.split('d').map(&:to_i)
+else
+  count = 1
+  sides = command.to_i
+end
+
+def roll sides
+  rand sides
+end
+
+total = 0
+
+count.times do |n|
+  result = roll sides
+  total += result
+  puts " -- #{n}: #{result}"
+end
+
+puts "total: #{total}"
