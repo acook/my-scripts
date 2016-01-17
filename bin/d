@@ -52,7 +52,7 @@ class DieRoller
     end
 
     count.times do |n|
-      result = rand sides
+      result = rand(1..sides)
       total += result
       if count > 1 then
         puts "  #{(n + 1).to_s.rjust 4}  : #{result.to_s.rjust 4}"
