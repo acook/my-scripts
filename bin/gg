@@ -7,7 +7,7 @@ else
   THIS="gg"
 fi
 
-GO_CONFIG=${GO_CONFIG:-".go"}
+GO_CONFIG=${GO_CONFIG:-".golang"}
 export GOPATH=$(pwd -P 2>/dev/null || command pwd)
 
 warn() { echo "$@" 1>&2; }
