@@ -1,24 +1,69 @@
 #!/usr/bin/env ruby
 
-command = ARGV.first
+class DieRoller
+  def self.parse command
+    if command.include? 'd' then
+      count, sides = command.split('d').map(&:to_i)
+    else
+      sides = command.to_i
+    end
 
-if command.include? 'd' then
-  count, sides = command.split('d').map(&:to_i)
+    if count.nil? || count == 0 then
+      count = 1
+    end
+
+    new count, sides
+  end
+
+  def initialize count, sides
+    @count, @sides = count, sides
+  end
+  attr_accessor :count, :sides
+
+  def roll
+    puts "(#{sides} sides @ #{count} count)" if $VERBOSE
+    total = 0
+
+    if count > 1 then
+      puts "  roll  |  result"
+      puts "  ---------------"
+    end
+
+    count.times do |n|
+      result = rand sides
+      total += result
+      if count > 1 then
+        puts "  #{(n + 1).to_s.rjust 4}  : #{result.to_s.rjust 4}"
+      else
+        puts "  #{result}"
+      end
+    end
+
+    puts "  total = #{total.to_s.rjust 4}" if count > 1
+  end
+end
+
+if ARGV.empty? then
+
+  require 'readline'
+
+  command = true
+  while command do
+    command = Readline.readline '> ', true
+    if command == 'exit' then
+      command = false
+    elsif command == '' then
+      DieRoller.new(1,20).roll
+    else
+      DieRoller.parse(command).roll
+    end
+  end
+
+  puts 'goodbye!'
+  exit
+
 else
-  count = 1
-  sides = command.to_i
+  command = ARGV.first
+
+  DieRoller.parse(command).roll
 end
-
-def roll sides
-  rand sides
-end
-
-total = 0
-
-count.times do |n|
-  result = roll sides
-  total += result
-  puts " -- #{n}: #{result}"
-end
-
-puts "total: #{total}"
