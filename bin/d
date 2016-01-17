@@ -1,6 +1,24 @@
 #!/usr/bin/env ruby
 
 class DieRoller
+  def self.repl
+    require 'readline'
+
+    command = true
+    while command do
+      command = Readline.readline '> ', true
+      if command == 'exit' then
+        command = false
+      elsif command == '' then
+        DieRoller.new(1,20).roll
+      else
+        DieRoller.parse command
+      end
+    end
+
+    puts 'goodbye!'
+  end
+
   def self.parse command
     commands = command.split /\s/
 
@@ -48,26 +66,7 @@ class DieRoller
 end
 
 if ARGV.empty? then
-
-  require 'readline'
-
-  command = true
-  while command do
-    command = Readline.readline '> ', true
-    if command == 'exit' then
-      command = false
-    elsif command == '' then
-      DieRoller.new(1,20).roll
-    else
-      DieRoller.parse command
-    end
-  end
-
-  puts 'goodbye!'
-  exit
-
+  DieRoller.repl
 else
-  command = ARGV.first
-
-  DieRoller.parse command
+  DieRoller.parse ARGV.join ' '
 end
