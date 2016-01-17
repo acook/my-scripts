@@ -2,17 +2,21 @@
 
 class DieRoller
   def self.parse command
-    if command.include? 'd' then
-      count, sides = command.split('d').map(&:to_i)
-    else
-      sides = command.to_i
-    end
+    commands = command.split /\s/
 
-    if count.nil? || count == 0 then
-      count = 1
-    end
+    commands.each do |command|
+      if command.include? 'd' then
+        count, sides = command.split('d').map(&:to_i)
+      else
+        sides = command.to_i
+      end
 
-    new count, sides
+      if count.nil? || count == 0 then
+        count = 1
+      end
+
+      new(count, sides).roll
+    end
   end
 
   def initialize count, sides
@@ -21,7 +25,7 @@ class DieRoller
   attr_accessor :count, :sides
 
   def roll
-    puts "(#{sides} sides @ #{count} count)" if $VERBOSE
+    puts "(#{sides} sides @ #{count} count)"
     total = 0
 
     if count > 1 then
@@ -55,7 +59,7 @@ if ARGV.empty? then
     elsif command == '' then
       DieRoller.new(1,20).roll
     else
-      DieRoller.parse(command).roll
+      DieRoller.parse command
     end
   end
 
@@ -65,5 +69,5 @@ if ARGV.empty? then
 else
   command = ARGV.first
 
-  DieRoller.parse(command).roll
+  DieRoller.parse command
 end
