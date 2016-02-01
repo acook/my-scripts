@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+
+if [[ -n `command -v curl` ]]; then
+  command="curl --fail --retry 50 -C - -O -L"
+else
+  echo "no curl"
+  exit 1
+  #command="wget"
+fi
+
+# iterate over each whitespace-delimited url and download them sequentially
+# use parens if url contains whitespace
+for url in $@; do
+  false # prime $? with 1
+  # retry downloading forever, unless we succeed or there's a server issue
+  until [[ $? -eq 0 || $? -eq 22 ]]; do
+    echo " -- downloading $url"
+    $command $url
+  done
+done
