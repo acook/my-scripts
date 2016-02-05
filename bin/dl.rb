@@ -15,7 +15,6 @@ class Curl
   CURL = "curl"
   DL_ARGS = "--fail --retry 50 -C - -L --globoff"
   FN_ARGS = "-sI \"%s\""
-  FN_TR   = "tr -d '\r'"
   DEFAULT_ARGS = DL_ARGS + " -O --remote-header-name"
 
   def initialize
@@ -46,7 +45,7 @@ class Curl
         msg = " -- Issues with filename, might be downloading a path.\n"
         msg << " -- Generating new filename...\n"
 
-        name = fetch_name @url
+        name = fetch_name url
 
         msg << " -- Saving as \"#{name}\"\n"
         msg << " -- Use \`file\` command to determine filetype if its not clear."
@@ -66,18 +65,17 @@ class Curl
   end
 
   def fetch_name url
-    Open3.pipeline_r [CURL, FN_ARGS].join(?\s) % url, FN_TR do |stdout, threads|
-      @status = threads.first.value.exitstatus
+    Open3.popen3 [CURL, FN_ARGS % url].join(?\s) do |stdin, stdout, stderr, thread|
+      @status = thread.value.exitstatus
 
       header = stdout.read
-      p header
 
-      m1 = header.match(/filename=(.*)$/)
+      m1 = header.match(/filename=(.*)\w*$/)
       if m1 && m1.captures.first && !m1.captures.first.empty? then
         f1 = m1.captures.first
       end
 
-      m2 = header.match(/Location:(.*)$/)
+      m2 = header.match(/Location:(.*)\w*$/)
       if m2 && m2.captures.first && !m2.captures.first.empty? then
         f2 = File.basename m2.captures.first
       end
