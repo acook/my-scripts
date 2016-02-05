@@ -88,7 +88,7 @@ class Curl
   end
 end
 
-class Downloader
+class Manager
   attr :current_item, :pending_items, :completed_items
 
   def initialize env
@@ -98,15 +98,16 @@ class Downloader
   end
 
   def download
-    until current_item.nil? && pending_items.empty? do
-      current_item = pending_items.pop unless current_item
+    current_item = pending_items.pop
+    curl = Curl.new(current_item.url)
 
-      curl = Curl.new(current_item.url)
+    until current_item.nil? do
       puts curl.fetch
 
       if curl.success? then
         completed_items << current_item
-        current_item = nil
+        current_item = pending_items.pop
+        curl = Curl.new(current_item.url)
       end
     end
 
@@ -138,7 +139,7 @@ class Main
     @items = @urls.map do |url|
       Item.new url
     end
-    dl = Downloader.new self
+    dl = Manager.new self
     dl.download
   end
 end
