@@ -1,20 +1,65 @@
 #!/usr/bin/env bash
 
 if [[ -n `command -v curl` ]]; then
-  command="curl --fail --retry 50 -C - -O -L"
+  base_command="curl --fail --retry 50 -C - -L --globoff"
+  command="$base_command -O --remote-header-name"
 else
   echo "no curl"
   exit 1
   #command="wget"
 fi
 
+# this function based on http://stackoverflow.com/a/26500519/1255156
+function getUriFilename() {
+  header="$(curl -sI "$1" | tr -d '\r')"
+
+  filename="$(echo "$header" | grep -o -E 'filename=.*$')"
+  if [[ -n "$filename" ]]; then
+    echo "${filename#filename=}"
+    return
+  fi
+
+  filename="$(echo "$header" | grep -o -E 'Location:.*$')"
+  if [[ -n "$filename" ]]; then
+    basename "${filename#Location\:}"
+    return
+  fi
+
+  echo "outfile"
+
+  return 1
+}
+
 # iterate over each whitespace-delimited url and download them sequentially
 # use parens if url contains whitespace
-for url in $@; do
+for url in "$@"; do
   false # prime $? with 1
   # retry downloading forever, unless we succeed or there's a server issue
-  until [[ $? -eq 0 || $? -eq 22 ]]; do
-    echo " -- downloading $url"
-    $command $url
+  until [[ $? -eq 0 ]]; do
+    echo " -- downloading \"$url\""
+    $command "$url"
+    result=$?
+
+    if [[ $result -eq 22 ]]; then
+      echo " -- Server issue encountered, check URL. Aborting."
+      true
+    elif [[ $result -eq 23 ]]; then
+      echo " -- Issues with filename, might be downloading a path."
+      echo " -- Generating new filename."
+      filename="$(getUriFilename "$url")"
+      echo " -- Saving as \"$filename\""
+      echo " -- Use \`file\` command to determine filetype if its not clear."
+      command="$base_command -o $filename"
+      false
+    elif [[ $result -ne 0 ]]; then
+      echo " -- Network trouble, retrying..."
+      sleep 1
+      false
+    else
+      echo " -- Looks like the download completed successfully, give it try."
+      true
+    fi
   done
 done
+
+exit $result
