@@ -1,11 +1,37 @@
 #!/usr/bin/env ruby
 
 class Item
+
+  CODE_MSG = Hash.new(" -- Network trouble (probably), retrying.").merge(
+    {
+      0 => " -- Looks like the download completed successfully, give it try.",
+      22 => " -- Server issue encountered, check URL. Aborting.",
+      23 => " -- Issues with filename, might be downloading a path.",
+    }
+  )
+
   def initialize url
     @url = url
+    @results = Hash.new
+    @msgs = Array.new
+    @filename = File.basename(url)
   end
   attr :url, :filename
-  attr :num_retries, :last_error
+  attr :results, :status_code, :msgs
+  attr_accessor :curl_args
+
+  def success?
+    @status_code == 0
+  end
+
+  def status_code= code
+    if code == 23 then
+      @determine_filetype = true
+    end
+
+    @status_code = code
+  end
+
 end
 
 class Curl
@@ -13,56 +39,50 @@ class Curl
   require 'securerandom'
 
   CURL = "curl"
-  DL_ARGS = "--fail --retry 50 -C - -L --globoff"
+  DL_ARGS = "-# -C - -L --globoff"
   FN_ARGS = "-sI \"%s\""
   DEFAULT_ARGS = DL_ARGS + " -O --remote-header-name"
 
-  def initialize url
-    @url = url
-    @dl_args = DEFAULT_ARGS
+  def initialize item
+    @item = item
+    @item.curl_args = DEFAULT_ARGS
   end
-  attr :url
 
   def fetch
-    puts " -- Using \"#{@dl_args}\""
-    puts " -- Downloading \"#{url}\""
+    puts " -- Using \"#{@item.curl_args}\""
+    puts " -- Downloading \"#{@item.url}\""
 
-    Open3.popen3 [CURL, @dl_args, url].join(?\s) do |stdin, stdout, stderr, thread|
+    Open3.popen3 [CURL, @item.curl_args, @item.url].join(?\s) do |stdin, stdout, stderr, thread|
       stdin.close
-      @status = thread.value.exitstatus
+      @item.status_code = thread.value.exitstatus
 
-      case @status
+      case @item.status_code
       when 0
-        msg = " -- Looks like the download completed successfully, give it try."
-        quit = true
+        @item.msgs << " -- Success."
+        @done = true
       when 22
-        msg = " -- Server issue encountered, check URL. Aborting."
-        quit = true
+        @item.msgs << " -- Server error."
+        @done = true
       when 23
-        msg = " -- Issues with filename, might be downloading a path.\n"
-        msg << " -- Generating new filename...\n"
-
-        name = self.class.new(url).fetch_name
-
-        msg << " -- Saving as \"#{name}\"\n"
-        msg << " -- Use \`file\` command to determine filetype if its not clear."
-        @dl_args = DL_ARGS + " -o #{name}"
-
-        quit = false
+        name = self.class.new(@item).fetch_name
+        @item.filename = name
+        @item.curl_args = DL_ARGS + " -o #{name}"
+        @item.msgs << " -- Saving as \"#{name}\"."
+        @done = false
       else
-        msg = " -- Network trouble (probably), retrying..."
-        msg << ?\n
-        msg << stderr.read
         sleep 1
-        quit = false
+        @item.msgs << " -- Retrying..."
+        @done = false
       end
 
-      @msg = msg
+      @item.results[@item.status_code] = stderr.read
+
+      @done
     end
   end
 
   def fetch_name
-    Open3.popen3 [CURL, FN_ARGS % url].join(?\s) do |stdin, stdout, stderr, thread|
+    Open3.popen3 [CURL, FN_ARGS % @item.url].join(?\s) do |stdin, stdout, stderr, thread|
       @status = thread.value.exitstatus
 
       header = stdout.read
@@ -83,8 +103,8 @@ class Curl
     end
   end
 
-  def success?
-    @status == 0
+  def done?
+    @done
   end
 end
 
@@ -99,15 +119,16 @@ class Manager
 
   def download
     current_item = pending_items.pop
-    curl = Curl.new(current_item.url)
+    curl = Curl.new(current_item)
 
     until current_item.nil? do
-      puts curl.fetch
+      curl.fetch
 
-      if curl.success? then
+      puts current_item.msgs.last
+      if curl.done? then
         completed_items << current_item
         current_item = pending_items.pop
-        curl = Curl.new(current_item.url)
+        curl = Curl.new(current_item)
       end
     end
 
