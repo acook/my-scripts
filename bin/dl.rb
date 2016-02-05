@@ -17,22 +17,19 @@ class Curl
   FN_ARGS = "-sI \"%s\""
   DEFAULT_ARGS = DL_ARGS + " -O --remote-header-name"
 
-  def initialize
-    @dl_args = nil
-    @status = nil
-  end
-
-  def fetch url
+  def initialize url
+    @url = url
     @dl_args = DEFAULT_ARGS
-    @status = nil
+  end
+  attr :url
 
+  def fetch
     puts " -- Using \"#{@dl_args}\""
-    puts " -- downloading \"#{url}\""
+    puts " -- Downloading \"#{url}\""
 
     Open3.popen3 [CURL, @dl_args, url].join(?\s) do |stdin, stdout, stderr, thread|
       stdin.close
       @status = thread.value.exitstatus
-      p thread
 
       case @status
       when 0
@@ -45,7 +42,7 @@ class Curl
         msg = " -- Issues with filename, might be downloading a path.\n"
         msg << " -- Generating new filename...\n"
 
-        name = fetch_name url
+        name = self.class.new(url).fetch_name
 
         msg << " -- Saving as \"#{name}\"\n"
         msg << " -- Use \`file\` command to determine filetype if its not clear."
@@ -64,20 +61,20 @@ class Curl
     end
   end
 
-  def fetch_name url
+  def fetch_name
     Open3.popen3 [CURL, FN_ARGS % url].join(?\s) do |stdin, stdout, stderr, thread|
       @status = thread.value.exitstatus
 
       header = stdout.read
 
-      m1 = header.match(/filename=(.*)\w*$/)
+      m1 = header.match(/filename=(.*)$/)
       if m1 && m1.captures.first && !m1.captures.first.empty? then
-        f1 = m1.captures.first
+        f1 = m1.captures.first.strip
       end
 
-      m2 = header.match(/Location:(.*)\w*$/)
+      m2 = header.match(/Location:(.*)$/)
       if m2 && m2.captures.first && !m2.captures.first.empty? then
-        f2 = File.basename m2.captures.first
+        f2 = File.basename m2.captures.first.strip
       end
 
       f3 = "outfile_#{SecureRandom.hex(6)}"
@@ -92,7 +89,6 @@ class Curl
 end
 
 class Downloader
-  attr :urls
   attr :current_item, :pending_items, :completed_items
 
   def initialize env
@@ -102,16 +98,20 @@ class Downloader
   end
 
   def download
-    curl = Curl.new
     until current_item.nil? && pending_items.empty? do
       current_item = pending_items.pop unless current_item
 
-      puts curl.fetch current_item.url
+      curl = Curl.new(current_item.url)
+      puts curl.fetch
 
       if curl.success? then
         completed_items << current_item
         current_item = nil
       end
+    end
+
+    completed_items.each do |item|
+      puts item.inspect
     end
   end
 end
