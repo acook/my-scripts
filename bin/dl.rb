@@ -16,9 +16,9 @@ class Item
     @msgs = Array.new
     @filename = File.basename(url)
   end
-  attr :url, :filename
+  attr :url
   attr :results, :status_code, :msgs
-  attr_accessor :curl_args
+  attr_accessor :curl_args, :filename
 
   def success?
     @status_code == 0
@@ -49,8 +49,7 @@ class Curl
   end
 
   def fetch
-    puts " -- Using \"#{@item.curl_args}\""
-    puts " -- Downloading \"#{@item.url}\""
+    @item.msgs << " -- Using \"#{@item.curl_args}\".\n -- Downloading \"#{@item.url}\"."
 
     Open3.popen3 [CURL, @item.curl_args, @item.url].join(?\s) do |stdin, stdout, stderr, thread|
       stdin.close
@@ -68,6 +67,7 @@ class Curl
         @item.filename = name
         @item.curl_args = DL_ARGS + " -o #{name}"
         @item.msgs << " -- Saving as \"#{name}\"."
+        @item.msgs << " -- Using \"#{@item.curl_args}\"."
         @done = false
       else
         sleep 1
@@ -124,7 +124,6 @@ class Manager
     until current_item.nil? do
       curl.fetch
 
-      puts current_item.msgs.last
       if curl.done? then
         completed_items << current_item
         current_item = pending_items.pop
