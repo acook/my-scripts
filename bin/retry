@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+false # prime $?
+until [[ $? -eq 0 ]]; do
+  sleep 1
+  $@
+done
