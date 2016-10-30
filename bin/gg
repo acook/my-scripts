@@ -4,6 +4,7 @@ if [[ $_ == $0 ]]; then
   RUNNER=1
   THIS=$(basename $0)
 else
+  RUNNER=0
   THIS="gg"
 fi
 
