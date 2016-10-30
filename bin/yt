@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+FILE="$1"
+
+if [[ "$2" == "-x" ]]; then
+  FORMAT="bestaudio"
+  MORE_OPTS="-x"
+else
+  FORMAT="bestvideo"
+fi
+
+OPTS="--write-description --write-sub --write-auto-sub --embed-subs --add-metadata --no-call-home --console-title"
+
+youtube-dl $FILE --format $FORMAT $OPTS $MORE_OPTS
