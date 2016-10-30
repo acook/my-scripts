@@ -1,0 +1,7 @@
+#!/usr/bin/env ruby
+
+puts "We got some shit to do."
+
+# Basically, this should go to a server, enqueue a URL to download, wait for the download to complete on the server
+# Then the remote will try to see if the file can be compressed meaningfully with 7z
+# And then this local will download the file using rsync
