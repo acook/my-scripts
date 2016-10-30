@@ -1,0 +1,4 @@
+sudo /usr/libexec/PlistBuddy -c 'Set :rights:system.preferences.network:group everyone' /etc/authorization
+sudo /usr/libexec/PlistBuddy -c 'Set :rights:system.services.systemconfiguration.network:rule allow' /etc/authorization
+
+
