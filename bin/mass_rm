@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+file="$1"
+patt="$2"
+cmd="rm -v --preserve-root --one-file-system -I"
+
+# reads list of files from $file
+# deletes only the files matching $patt
+# tries to rm as safely as possible
+
+# turn off globbing
+set -f
+# split at newlines only
+IFS='
+'
+
+exists() {
+  hash "$1" 2>/dev/null
+}
+
+if exists "parallel"; then
+  cat $file | grep "$patt" | parallel "$cmd"
+else
+  for f in $(cat $file | grep "$patt") ; do
+    $cmd "$f"
+  done
+fi
