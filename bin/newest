@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+dir="${1:-.}"
+
+$dir/$(\ls -Art $dir | tail -n 1) "${@:2}"
