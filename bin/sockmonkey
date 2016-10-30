@@ -2,6 +2,12 @@
 
 remote="$@"
 
+if [[ -z $remote ]]; then
+  echo "no server specified"
+  echo "usage: sockmonkey user@ssh.example.com"
+  exit 1
+fi
+
 monitor_port="20000"
 proxy_port="9999"
 network_type="wi-fi"
