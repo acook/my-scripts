@@ -1,0 +1,120 @@
+#!/usr/bin/env ruby
+
+# Dice Expression Parser
+
+class DiceExpression
+  def parse command
+    no_merge = false
+    last = nil
+    was_num = false
+
+    command.each_char do |char|
+      puts "  --  char: #{char}"
+
+      unless args.empty? then
+        unless char =~ args.last then
+          stack.push ops.pop
+          args.pop
+        end
+      end
+
+      case char
+      when /\d/ then
+        if no_merge then
+          stack.push char
+          no_merge = false
+        else
+          num(char)
+        end
+        was_num = true
+      when 'd' then
+        unless stack.last.is_a? String then
+          stack.push '1'
+        end
+
+        args.push /\d/
+        ops.push :d
+        no_merge = true
+      when '+' then
+        ops.push :+
+        args.push /\d/
+        no_merge = true
+      when '-' then stack << :-
+        args.push /\d/
+        no_merge = true
+      when '*' then stack << :*
+        args.push /\d/
+        no_merge = true
+      when '/' then stack << :/
+        args.push /\d/
+        no_merge = true
+      when '>' then stack << :>
+        args.push /\d/
+        no_merge = true
+      when '<' then stack << :<
+        args.push /\d/
+        no_merge = true
+      when /\w/ then stack << nil
+      else
+        raise ArgumentError, "WTF is `#{char}'??"
+      end
+
+      was_num = char =~ /\d/
+      last = char
+
+      puts "  -- stack: #{stack.inspect}"
+    end
+
+    unless ops.empty? then
+      stack.push ops.pop
+    end
+
+    puts "  -- running stack: #{stack.inspect}"
+    run
+  end
+
+  def initialize
+    @stack = Array.new
+    @args = Array.new
+    @ops = Array.new
+  end
+  attr :stack, :args, :ops
+
+  def num digit
+    if stack.last.is_a? String then
+      stack[-1] = stack[-1]+digit
+    else
+      stack.push digit
+    end
+  end
+
+  def run
+    op = stack.pop
+
+    case op
+    when :d
+      sides = stack.pop.to_i
+      count = stack.pop.to_i
+      total = 0
+      count.times do |c|
+        r = rand(sides)
+        total += r
+        puts "  ##{c+1} : #{r}"
+      end
+      puts "  = #{total}"
+    when :+
+      r = stack.pop
+      l = stack.pop
+      stack.push r + l
+      # basically this is all wrong
+      # we need to collapse the results and replace them on the stack
+      # so that encountering a "nil" will display the total
+    when nil
+      puts stack.pop
+    else
+      raise "WTF is `#{op.inspect}`?"
+    end
+  end
+end
+
+DiceExpression.new.parse ARGV.join ' '
