@@ -1,4 +1,26 @@
-#!/usr/bin/env ruby
+#!/usr/bin/env bash
+
+if [[ -n $(command -v curl) ]]; then
+  command="curl -s --connect-timeout 5 --retry 5 --retry-max-time 5 -O"
+else
+  command="wget -t 5 -T 5 -1"
+fi
+
+if [[ $1 == '-v' || $1 == "-c" ]]; then
+  echo -ne "$command"
+fi
+
+result=0
+if [[ $1 != '-c' ]]; then
+  $command "$@"
+  result=$?
+fi
+
+exit $result
+
+/usr/bin/env ruby -x "$0"
+
+#!ruby
 
 puts "We got some shit to do."
 
