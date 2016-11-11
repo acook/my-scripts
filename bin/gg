@@ -10,8 +10,8 @@ fi
 
 # only need to export GOPATH once
 export GOPATH
-GOPATH=$(pwd -P 2>/dev/null || command pwd)
 GO_CONFIG=${GO_CONFIG:-".golang"}
+GOPATH="$(command pwd -P 2>/dev/null)"
 
 # helper to print to stderr without eating things that look like opts
 warn() { printf "%s\n" "$*" >&2; }
