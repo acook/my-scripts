@@ -1,33 +1,36 @@
 #!/usr/bin/env bash
 
-if [[ $_ == $0 ]]; then
+if [[ "$_" == "$0" ]]; then
   RUNNER=1
-  THIS=$(basename $0)
+  THIS="$(basename "$0")"
 else
   RUNNER=0
   THIS="gg"
 fi
 
+# only need to export GOPATH once
+export GOPATH
+GOPATH=$(pwd -P 2>/dev/null || command pwd)
 GO_CONFIG=${GO_CONFIG:-".golang"}
-export GOPATH=$(pwd -P 2>/dev/null || command pwd)
 
 warn() { echo "$@" 1>&2; }
 
 # iterate upwards over dirs until we find a config
-while [ ! -e "$GOPATH/$GO_CONFIG" ]; do
-  export GOPATH=${GOPATH%/*}
-  if [ "$GOPATH" = "" ]; then
+while [[ ! -e "$GOPATH/$GO_CONFIG" ]]; do
+  GOPATH=${GOPATH%/*}
+  if [[ "$GOPATH" = "" ]]; then
     warn "$THIS: no $GO_CONFIG config found using PWD instead"
-    export GOPATH=$(pwd)
+    GOPATH="$(pwd)"
     break
   fi
 done
 
-warn "$THIS: using GOPATH=$GOPATH"
+warn "$THIS: using GOPATH=\"$GOPATH\""
 
 # check for the presence of a config
-if [ -a "$GOPATH/$GO_CONFIG" ]; then
+if [[ -a "$GOPATH/$GO_CONFIG" ]]; then
   # just source it, no its not safe
+  # shellcheck source=/dev/null
   source "$GOPATH/$GO_CONFIG"
 fi
 
@@ -35,8 +38,8 @@ export GOBIN="$GOPATH/bin"
 
 # if this script is being invoked directly
 if [[ "$RUNNER" == 1 ]]; then
-  if [[ "dir" == $1 ]]; then
-    if [ -z "$3" ]; then
+  if [[ "dir" == "$1" ]]; then
+    if [[ -z "$3" ]]; then
       NAME="direct"
     else
       NAME="$3"
@@ -52,10 +55,9 @@ if [[ "$RUNNER" == 1 ]]; then
     ln -s "$DIR" "$SYM"
   else
     warn
-    # run go with all the arguments we were passed
-    go "$@"
 
-    if [ $? -eq 0 ]; then
+    # run go with all the arguments we were passed
+    if ! go "$@"; then
       warn "$THIS: $1 command completed successfully"
     else
       warn "$THIS: $1 command exited with an error code ($?)"
