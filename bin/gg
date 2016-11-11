@@ -8,35 +8,54 @@ else
   THIS="gg"
 fi
 
+# helper to print to stderr without eating things that look like opts
+warn() { printf "%s\n" "$*" >&2; }
+# pwd helper
+getpwd() { command pwd -L 2> /dev/null; }
+# if a directory goes missing, shellcheck asks we exit with an error
+patherror() { warn "$THIS: unable to cd! (PWD=\"$(getpwd)\" THISPATH=\"$THISPATH\")"; exit 126; }
+
+# store the current directory, so we can return to it later
+THISPATH="$(getpwd)"
+
 # only need to export GOPATH once
 export GOPATH
-GOPATH="$(command pwd -P 2>/dev/null)"
+GOPATH="$THISPATH"
 GO_CONFIG="${GO_CONFIG:-".golang"}"
 GO_EXEC="${GO_EXEC:-"go"}"
 
-# helper to print to stderr without eating things that look like opts
-warn() { printf "%s\n" "$*" >&2; }
-
 # iterate upwards over dirs until we find a config
-while [[ ! -e "$GOPATH/$GO_CONFIG" ]]; do
-  GOPATH="${GOPATH%/*}"
-  if [[ "$GOPATH" = "" ]]; then
+until [[ -e "./$GO_CONFIG" ]]; do
+  CURRPATH="$(getpwd)"
+  if [[ "$CURRPATH" == "/" ]]; then
     warn "$THIS: no $GO_CONFIG config found using PWD instead"
-    GOPATH="$(pwd)"
     break
   fi
+  cd .. || patherror
 done
 
-warn "$THIS: using GOPATH=\"$GOPATH\""
+# capture the old value so we know if we can overwrite it later
+OLD_GOBIN="$GOBIN"
 
 # check for the presence of a config
-if [[ -a "$GOPATH/$GO_CONFIG" ]]; then
+if [[ -e "./$GO_CONFIG" ]]; then
+  GOPATH="$(getpwd)"
   # just source it, no its not safe
+  # this will let the GO_CONFIG set its own GOPATH
   # shellcheck source=/dev/null
   source "$GOPATH/$GO_CONFIG"
 fi
 
-export GOBIN="$GOPATH/bin"
+# report what GOPATH we're using
+warn "$THIS: using GOPATH=\"$GOPATH\""
+
+# only overwrite GOBIN if it's unchanged by the GO_CONFIG
+if [[ "$GOBIN" == "$OLD_GOBIN" ]]; then
+  export GOBIN="$GOPATH/bin"
+fi
+
+# return back to the original path we started in
+cd "$THISPATH" || patherror
 
 # if this script is being invoked directly
 if [[ "$RUNNER" == 1 ]]; then
