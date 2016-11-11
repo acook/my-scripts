@@ -13,14 +13,14 @@ warn() { printf "%s\n" "$*" >&2; }
 # pwd helper
 getpwd() { command pwd -L 2> /dev/null; }
 # if a directory goes missing, shellcheck asks we exit with an error
-patherror() { warn "$THIS: unable to cd! (PWD=\"$(getpwd)\" THISPATH=\"$THISPATH\")"; exit 126; }
+patherror() { warn "$THIS: unable to cd! (PWD=\"$(getpwd)\" WORKPATH=\"$WORKPATH\")"; exit 126; }
 
 # store the current directory, so we can return to it later
-THISPATH="$(getpwd)"
+WORKPATH="$(getpwd)"
 
 # only need to export GOPATH once
 export GOPATH
-GOPATH="$THISPATH"
+GOPATH="$WORKPATH"
 GO_CONFIG="${GO_CONFIG:-".golang"}"
 GO_EXEC="${GO_EXEC:-"go"}"
 
@@ -55,7 +55,7 @@ if [[ "$GOBIN" == "$OLD_GOBIN" ]]; then
 fi
 
 # return back to the original path we started in
-cd "$THISPATH" || patherror
+cd "$WORKPATH" || patherror
 
 # if this script is being invoked directly
 if [[ "$RUNNER" == 1 ]]; then
