@@ -79,9 +79,8 @@ if [[ "$RUNNER" == 1 ]]; then
 
     # run go with all the arguments we were passed
     $GO_EXEC "$@"
+    # save the exit code returned
     GO_EXIT=$?
-
-    warn # newline
 
     GO_CMD="${1:-$GO_EXEC}"
 
@@ -89,6 +88,8 @@ if [[ "$RUNNER" == 1 ]]; then
       warn "$THIS: $GO_CMD command completed successfully"
     else
       warn "$THIS: $GO_CMD command exited with an error code ($GO_EXIT)"
+      [[ $GO_EXIT == 2 && -z $1 ]] && warn "$THIS: no commandline arguments supplied"
+      [[ $GO_EXIT == 127 && ! $(command -v "$GO_EXEC" >/dev/null 2>&1) ]] && warn "$THIS: no go executable found? (GO_EXEC=\"$GO_EXEC\")"
       exit $GO_EXIT
     fi
   fi
