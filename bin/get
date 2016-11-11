@@ -6,13 +6,14 @@ else
   command="wget -t 5 -T 5 -1 -O-"
 fi
 
-if [[ $1 == '-c' ]]; then
+if [[ $1 == '-v' || $1 == "-c" ]]; then
   echo -ne "$command"
-else
-  if [[ $1 == '-v' ]]; then
-    echo -ne "$command"
-  fi
-
-  $command "$@"
 fi
 
+result=0
+if [[ $1 != '-c' ]]; then
+  $command "$@"
+  result=$?
+fi
+
+exit $result
