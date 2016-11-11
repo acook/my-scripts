@@ -13,7 +13,8 @@ export GOPATH
 GOPATH=$(pwd -P 2>/dev/null || command pwd)
 GO_CONFIG=${GO_CONFIG:-".golang"}
 
-warn() { echo "$@" 1>&2; }
+# helper to print to stderr without eating things that look like opts
+warn() { printf "%s\n" "$*" >&2; }
 
 # iterate upwards over dirs until we find a config
 while [[ ! -e "$GOPATH/$GO_CONFIG" ]]; do
