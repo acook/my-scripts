@@ -10,15 +10,16 @@ fi
 
 # only need to export GOPATH once
 export GOPATH
-GO_CONFIG=${GO_CONFIG:-".golang"}
 GOPATH="$(command pwd -P 2>/dev/null)"
+GO_CONFIG="${GO_CONFIG:-".golang"}"
+GO_EXEC="${GO_EXEC:-"go"}"
 
 # helper to print to stderr without eating things that look like opts
 warn() { printf "%s\n" "$*" >&2; }
 
 # iterate upwards over dirs until we find a config
 while [[ ! -e "$GOPATH/$GO_CONFIG" ]]; do
-  GOPATH=${GOPATH%/*}
+  GOPATH="${GOPATH%/*}"
   if [[ "$GOPATH" = "" ]]; then
     warn "$THIS: no $GO_CONFIG config found using PWD instead"
     GOPATH="$(pwd)"
@@ -55,13 +56,21 @@ if [[ "$RUNNER" == 1 ]]; then
     warn "$THIS: creating symlink \"$SYM\""
     ln -s "$DIR" "$SYM"
   else
-    warn
+    warn # newline
 
     # run go with all the arguments we were passed
-    if ! go "$@"; then
-      warn "$THIS: $1 command completed successfully"
+    $GO_EXEC "$@"
+    GO_EXIT=$?
+
+    warn # newline
+
+    GO_CMD="${1:-$GO_EXEC}"
+
+    if [[ $GO_EXIT == 0 ]]; then
+      warn "$THIS: $GO_CMD command completed successfully"
     else
-      warn "$THIS: $1 command exited with an error code ($?)"
+      warn "$THIS: $GO_CMD command exited with an error code ($GO_EXIT)"
+      exit $GO_EXIT
     fi
   fi
 fi
