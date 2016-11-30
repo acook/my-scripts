@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+# get last arg from commandline, this should be the user
+username="${@: -1}"
+
+# we require a username, not just an option (which begin with a dash)
+if [[ -z $username ]] || [[ $username == -* ]]; then
+  echo "usage: $(basename $0) [su options] username"
+  # also display su's options in case they come in handy
+  su -h
+  exit 1
+fi
+
+# this lets us login to users with false/nologin set as their shell
+sudo su --shell $SHELL -l "$@"
