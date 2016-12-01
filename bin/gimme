@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 if [[ -n $(command -v curl) ]]; then
-  command="curl -s --connect-timeout 5 --retry 5 --retry-max-time 5 -O"
+  command="curl -s --connect-timeout 5 --retry 5 --retry-max-time 5 -L -O"
 else
   command="wget -t 5 -T 5 -1"
 fi
