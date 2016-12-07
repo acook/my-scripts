@@ -1,21 +1,34 @@
 #!/usr/bin/env bash
 
-`exit 127`
-until (( $? == 0 )) ; do
-  case $(( RANDOM % 6 )) in
-    0) site="http://www.showmyip.com/simple/" ;;
-    1) site="http://cfaj.freeshell.org/ipaddr.cgi" ;;
-    2) site="https://secure.informaction.com/ipecho/" ;;
-    3) site="http://icanhazip.com/" ;;
-    4) site="http://ifconfig.me/ip" ;;
-    5) site="http://ip.appspot.com" ;;
+status=127  # prime this so it's not undefined or 0
+count=0     # we use this to round-robin the requests
+until [[ $status == 0 ]]; do  # keep going around until a command succeeds
+  dig=0     # reset this each time
+
+  case $(( count % 6 )) in
+    0) dig=1; site="TXT +short o-o.myaddr.l.google.com @ns1.google.com" ;;
+    1) dig=1; site="+short myip.opendns.com @resolver1.opendns.com" ;;
+    2) site="ifconfig.co" ;;
+    3) site="https://secure.informaction.com/ipecho/" ;;
+    4) site="https://myexternalip.com/raw" ;;
+    5) site="http://icanhazip.com/" ;;
+    6) site="http://ifconfig.me/ip" ;;
   esac
+
+  if [[ $dig == 1 ]]; then
+    ip=$(dig $site)
+  else
+    ip=$(get $site)
+  fi
+
+  status=$?    # save for the until check
+  ((count++))  # increment the count
 done
 
-ip=`get $site`
-
+# print the site if there's a -d argument
 if [[ $1 == "-d" ]]; then
-  echo $site
+  echo "$site"
 fi
 
+# cleanup the output, sometimes they put quote around it or something
 echo "${ip//[^0-9.]}"
