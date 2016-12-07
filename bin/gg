@@ -35,7 +35,7 @@ until [[ -e "./$GO_CONFIG" ]]; do
 done
 
 # capture the old value so we know if we can overwrite it later
-OLD_GOBIN="$GOBIN"
+OLD_GOBIN=${GOBIN:-}
 
 # check for the presence of a config
 if [[ -e "./$GO_CONFIG" ]]; then
@@ -50,7 +50,7 @@ fi
 warn "$THIS: using GOPATH=\"$GOPATH\""
 
 # only overwrite GOBIN if it's unchanged by the GO_CONFIG
-if [[ "$GOBIN" == "$OLD_GOBIN" ]]; then
+if [[ OLD_GOBIN=${GOBIN:-} == "$OLD_GOBIN" ]]; then
   export GOBIN="$GOPATH/bin"
 fi
 
