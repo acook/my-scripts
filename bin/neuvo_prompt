@@ -90,12 +90,13 @@ __prompt_git() {
 }
 
 function __prompt_no_see_ums () {
-  set_window_title "$PWD"
-  set_icon_title "$PWD"
-  if [[ ${#PWD} -gt 19 ]]; then
-    set_pane_name "…${PWD: -18:18}"
+  path=${PWD//$HOME/\~}
+  set_window_title "$path"
+  set_icon_title "$path"
+  if [[ ${#path} -gt 19 ]]; then
+    set_pane_name "…${path: -18:18}"
   else
-    set_pane_name "$PWD"
+    set_pane_name "$path"
   fi
 }
 
