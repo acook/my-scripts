@@ -92,7 +92,11 @@ __prompt_git() {
 function __prompt_no_see_ums () {
   set_window_title "$PWD"
   set_icon_title "$PWD"
-  set_pane_name "$PWD"
+  if [[ ${#PWD} -gt 19 ]]; then
+    set_pane_name "…${PWD: -18:18}"
+  else
+    set_pane_name "$PWD"
+  fi
 }
 
 function __prompt_localinfo () {
