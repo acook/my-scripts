@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # defined colors to make it easier to output visually stimulating prompts and other messages
 
 # escapes the arguments you send it
