@@ -13,10 +13,10 @@ ST=$(string_terminator)
 # escape for titles
 function esct () { esc "]$*$ST"; }
 
-# Pane Name (tmux only)
+# Pane Name (tmux only, but works in tmux-for-iTerm)
 function set_pane_name () { esc "k$*$ST"; }
 
-# Icon Name (xterm only?) and Window Title
+# Icon Name and Tab Title (works in iTerm and xterm)
 function set_icon_title () { esct "0;$*"; }
 
 # Set Xterm-style Window Title
