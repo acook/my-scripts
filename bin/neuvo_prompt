@@ -1,0 +1,106 @@
+#!/usr/bin/env bash
+
+# Load my prompt helpers that make a lot of this voodoo easier to do
+source prompt_helpers
+
+# escapes the arguments you send it
+function __prompt_esc () { echo -ne "\\033$*"; }
+
+# ANSI escape for setting colors
+function __prompt_escc () { __prompt_esc "[$1m"; }
+
+## Foreground Shortcuts
+# normal (reset)
+function __prompt_fgc () { __prompt_escc "0;$1"; }
+# bold (bright)
+function __prompt_fgb () { __prompt_escc "1;$1"; }
+
+# easier raw access to 256 colors
+function __prompt_fgx () { __prompt_escc "38;5;$1"; }
+function __prompt_bgx () { __prompt_escc "48;5;$1"; }
+
+# text styles
+# reset colors to defaults
+ansi_reset=$(__prompt_escc 0)
+# bold
+bold=$(__prompt_escc 1)
+# underline
+underline=$(__prompt_escc 4)
+# blink - when supported
+blink=$(__prompt_escc 5)
+# reverse (swap fb and bg colors)
+inverse=$(__prompt_escc 7)
+
+# Basic ANSI color map
+black=0  # Black/Grey
+red=1    # Red/Pink
+green=2  # Green/LightGreen
+yellow=3 # Orange/Yellow
+blue=4   # Blue/LightBlue
+violet=5 # Purple/Magenta
+cyan=6   # Teal/Cyan
+white=7  # Gray/White
+
+# prefixes
+fg=3
+bg=4
+
+# The ECMA-48 string terminator used by xterm
+# BEL (^G) would also work accoring to the spec
+ST=$(__prompt_esc "\\")
+
+# my trademark colors
+lime='154'
+neonberry='26'
+superpink='199'
+
+# theme
+# theme basics
+path_color="$(__prompt_fgx $lime)"
+prompt_color="$(__prompt_fgx $neonberry)"
+command_color="$ansi_reset"
+# theme localinfo
+user_color="$(__prompt_fgc $fg$red)"
+at_color="$(__prompt_fgx $neonberry)"
+host_color="$(__prompt_fgc $fg$cyan)"
+# theme for git
+on_color="$(__prompt_fgx $neonberry)"
+branch_color="$(fgx $superpink)"
+dirty_color="$(__prompt_fgx $lime)"
+
+__prompt_git() {
+  branch="$(git branch 2> /dev/null | awk '$1 == "*" { printf $2 }')"
+
+  # quit now if we're not on a branch
+  [[ -z $branch ]] && return
+
+  status="$(
+    git status 2> /dev/null |
+    awk 'index($0,"Untracked files:") { unknown = 1 }
+         index($0,"modified:") { changed = 1 }
+         index($0,"new file:") { new = 1 }
+         END {
+          if (unknown) printf "?"
+          else if (changed) printf "!"
+          else if (new) printf "."
+         }'
+  )"
+
+  echo "$on_color on $branch_color$branch $dirty_color$status"
+}
+
+function __prompt_no_see_ums () {
+  set_window_title "$PWD"
+  set_icon_title "$PWD"
+  set_pane_name "$PWD"
+}
+
+function __prompt_localinfo () {
+  if false; then
+    echo -ne "$user_color$USER$at_color at $host_color$HOSTNAME "
+  fi
+}
+
+PS1='\[$ansi_reset$(__prompt_no_see_ums)\]$(__prompt_localinfo)$path_color\w$(__prompt_git)
+\[\r$prompt_color\]\$\[$command_color\] '
+
