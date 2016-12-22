@@ -1,0 +1,30 @@
+#!/usr/bin/env ruby
+
+require 'pathname'
+
+pwd     = Pathname.pwd
+longest = 0
+results = pwd.children.map do |path|
+  longest = [path.basename.to_s.length, longest].max
+  type    = %x[file #{path}].gsub(/^#{path}:\s/, '')
+
+  [path.basename, type]
+end
+
+colors = {
+  /bash|Bourne/ => "\033[0;32m",
+  /zsh/ => "\033[0;34m",
+  /shell|SHELL/ => "\033[0;35m",
+  /perl/ => "\033[0;33m",
+  /ruby/ => "\033[0;31m",
+  /x86/ => "\033[1;34m",
+  /broken/ => "\033[1;31m",
+  /link|socket/ => "\033[1;33m",
+}
+
+print "\033[1m  NAME".ljust(longest), "\t  TYPE\n"
+results.each do |name, type|
+  color = colors.detect{|r,c| break c if r =~ type } || "\033[0m"
+  print color, name.to_s.ljust(longest), "\t", type
+end
+
