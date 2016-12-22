@@ -1,0 +1,10 @@
+#!/usr/bin/env ruby
+
+require 'date'
+
+branches = %x[git branch].split(?\n).map{|l| l.gsub(/^\* /, '').strip }
+branches.each do |branch|
+  datestr = %x[git show #{branch} --shortstat].split(?\n)[2].strip.gsub(/.*Date:\s+/, '')
+  date = Date.parse datestr
+  puts "#{branch}\t\t#{date}"
+end
