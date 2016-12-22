@@ -1,5 +1,7 @@
 #!/usr/bin/env ruby
 
+# usage: Shows the date of the most recent commit for each branch
+
 require 'date'
 
 branches = %x[git branch].split(?\n).map{|l| l.gsub(/^\* /, '').strip }
@@ -8,3 +10,6 @@ branches.each do |branch|
   date = Date.parse datestr
   puts "#{branch}\t\t#{date}"
 end
+
+# TODO: argument for finding the first commit of a branch
+# TODO: argument for enabling approxidate
