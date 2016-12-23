@@ -29,7 +29,9 @@ class WhatKind
 
   class Directory < Entry
     def children
-      @children ||= path.children.map do |child|
+      @children ||= path.children.sort do |child|
+        child.directory? ? 1 : 0
+      end.map do |child|
         if child.directory? then
           Directory.new child
         else
