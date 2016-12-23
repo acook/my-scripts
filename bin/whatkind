@@ -136,7 +136,9 @@ class WhatKind
         elsif arg == '--recourse' then
           @recourse = args[i + 1].to_i
           skip = i + 1
-        elsif skip != i
+        elsif %w[-h --help].include? arg then
+          usage
+        elsif skip != i then
           paths << arg
         end
       end
@@ -173,6 +175,18 @@ class WhatKind
       else
         Entry.new path
       end
+    end
+
+    def usage
+      puts "usage: #{Pathname.new($0).basename} [-r] [--recourse DEPTH] [<paths>]"
+      puts "\tshows colorized and structured libmagic types"
+      puts
+      puts "\t-r\trecourse infinite"
+      puts "\t--recourse DEPTCH\t recourse to depth"
+      puts "\t-h\tshow this help"
+      puts "\t<paths>\ta list of zero or more paths"
+      puts "\t\twill scan PWD if no path supplied"
+      exit 0
     end
   end
 
