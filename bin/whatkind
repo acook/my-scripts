@@ -3,6 +3,7 @@
 require 'pathname'
 
 class WhatKind
+
   class Entry
     def initialize path
       @path = Pathname.new path
@@ -27,10 +28,6 @@ class WhatKind
   end
 
   class Directory < Entry
-    def initialize path
-      super path
-    end
-
     def children
       @children ||= path.children.map do |child|
         if child.directory? then
@@ -42,7 +39,7 @@ class WhatKind
     end
 
     def longest
-      @longest ||= children.max{|c| c.name.length }.name.length
+      @longest ||= children.map{|c| c.name.length }.max
     end
   end
 
@@ -103,26 +100,26 @@ class WhatKind
       @root = root
     end
 
-    def render recourse = 0
-      render_recourse @root, recourse
+    def render recourse = 0, parent_longest = 0
+      render_recourse @root, recourse, parent_longest
     end
 
-    def render_recourse entry, recourse, indent = 0, parent_longest = 0
+    def render_recourse entry, recourse, parent_longest, indent = 0
       if entry.directory? then
         if entry.children.empty? then
-          line entry, indent, entry.longest
+          line entry, parent_longest, indent
         else
-          line entry, indent, parent_longest
+          line entry, parent_longest, indent
           entry.children.each do |child|
-            render_recourse child, (recourse - 1), (indent + 1), (entry.longest + 1)
+            render_recourse child, (recourse - 1), (entry.longest + 1), (indent + 1)
           end
         end
       else
-        line entry, indent, parent_longest
+        line entry, parent_longest, indent
       end
     end
 
-    def line entry, indent, longest
+    def line entry, longest, indent
       print Theme.new(entry).color, (' ' * (indent * 2)),
         entry.name.ljust(longest), ?\t, entry.type, ?\n
     end
@@ -139,11 +136,7 @@ class WhatKind
     end
 
     def run
-      if @paths.empty? then
-        walk @recourse
-      else
-        walk @recourse
-      end
+      walk @recourse
     end
 
     def paths
@@ -155,8 +148,10 @@ class WhatKind
     end
 
     def walk recourse = 0
+      longest = paths.map{|path| path.length }.max
+
       paths.each do |path|
-        Formatter.new(wrap path).render recourse
+        Formatter.new(wrap path).render recourse, longest
       end
     end
 
