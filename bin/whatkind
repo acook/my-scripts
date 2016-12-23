@@ -3,27 +3,6 @@
 require 'pathname'
 
 class WhatKind
-  class Walker
-    def initialize paths
-      @paths = paths
-    end
-
-    def walk recourse = 0
-      @paths.each do |path|
-        Formatter.new(wrap path).render recourse
-      end
-    end
-
-    def wrap path
-      path = Pathname.new path
-      if path.directory? then
-        Directory.new path
-      else
-        Entry.new path
-      end
-    end
-  end
-
   class Entry
     def initialize path
       @path = Pathname.new path
@@ -160,14 +139,33 @@ class WhatKind
     end
 
     def run
-      walker.walk @recourse
+      if @paths.empty? then
+        walk @recourse
+      else
+        walk @recourse
+      end
     end
 
-    def walker
-      if @paths.empty? then
-        Walker.new [Pathname.pwd]
+    def paths
+      if @paths.empty?
+        @paths = Array(Pathname.pwd)
       else
-        Walker.new @paths
+        @paths
+      end
+    end
+
+    def walk recourse = 0
+      paths.each do |path|
+        Formatter.new(wrap path).render recourse
+      end
+    end
+
+    def wrap path
+      path = Pathname.new path
+      if path.directory? then
+        Directory.new path
+      else
+        Entry.new path
       end
     end
   end
