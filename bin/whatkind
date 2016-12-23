@@ -111,7 +111,7 @@ class WhatKind
         else
           line entry, parent_longest, indent
           entry.children.each do |child|
-            render_recourse child, (recourse - 1), (entry.longest + 1), (indent + 1)
+            render_recourse child, (recourse - 1), entry.longest, (indent + 1)
           end
         end
       else
