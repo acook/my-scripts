@@ -129,8 +129,17 @@ class WhatKind
 
   class CLI
     def initialize args
-      @recourse = args.include?('-r') ? Float::INFINITY : 0
-      @paths = args.reject{|a| a == '-r' }
+      skip = nil
+      @paths = args.each_with_object(Array.new).with_index do |(arg, paths), i|
+        if arg == '-r' then
+          @recourse = Float::INFINITY
+        elsif arg == '--recourse' then
+          @recourse = args[i + 1].to_i
+          skip = i + 1
+        elsif skip != i
+          paths << arg
+        end
+      end
     end
 
     def recourse?
