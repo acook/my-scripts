@@ -7,9 +7,15 @@ def self.dir_types dir, recourse = 0
   results = Array.new
   path = Pathname.new dir
 
-  if path.directory? then
+  if path.directory? && recourse > -1 then
     path.children.each do |subpath|
       if subpath.directory? && recourse > 0 then
+        dir_info = dir_types(subpath, -1)
+
+        dir_info = dir_info.first.first
+        dir_info[0] = "SUBPATH: #{dir_info.first.to_s}"
+
+        results << dir_info
         r, l    = dir_types subpath, recourse - 1
         longest = [l, longest].max
         results.concat r
