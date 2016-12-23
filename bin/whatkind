@@ -2,13 +2,38 @@
 
 require 'pathname'
 
-pwd     = Pathname.pwd
-longest = 0
-results = pwd.children.map do |path|
-  longest = [path.basename.to_s.length, longest].max
-  type    = %x[file #{path}].gsub(/^#{path}:\s/, '')
+def self.dir_types dir_path
+  longest = 0
 
-  [path.basename, type]
+  results = dir_path.children.map do |path|
+    longest = [path.basename.to_s.length, longest].max
+    type    = %x[file #{path}].gsub(/^#{path}:\s/, '')
+
+    [path.basename, type]
+  end
+
+  [results, longest]
+end
+
+if ARGV.empty? then
+  results, longest = dir_types Pathname.pwd
+else
+  longest = 0
+  results = Array.new
+  ARGV.each do |p|
+    path    = Pathname.new p
+    longest = [path.basename.to_s.length, longest].max
+    if path.directory? then
+      r, l = dir_types path
+      results += r
+      longest = [l, longest].max
+    elsif path.exist? then
+      type    = %x[file #{path}].gsub(/^#{path}:\s/, '')
+      results << [path.basename, type]
+    else
+      results << [path.basename, "PATH NOT FOUND"]
+    end
+  end
 end
 
 colors = {
@@ -17,8 +42,9 @@ colors = {
   /shell|SHELL/ => "\033[0;35m",
   /perl/ => "\033[0;33m",
   /ruby/ => "\033[0;31m",
-  /x86/ => "\033[1;34m",
-  /broken/ => "\033[1;31m",
+  /python/ => "\033[0;36m",
+  /x86|i386/ => "\033[1;34m",
+  /broken|NOT FOUND/ => "\033[1;31m",
   /link|socket/ => "\033[1;33m",
 }
 
