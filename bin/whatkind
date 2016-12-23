@@ -2,37 +2,45 @@
 
 require 'pathname'
 
-def self.dir_types dir_path
+def self.dir_types dir, recourse = 0
   longest = 0
+  results = Array.new
+  path = Pathname.new dir
 
-  results = dir_path.children.map do |path|
-    longest = [path.basename.to_s.length, longest].max
+  if path.directory? then
+    path.children.each do |subpath|
+      if subpath.directory? && recourse > 0 then
+        r, l    = dir_types subpath, recourse - 1
+        longest = [l, longest].max
+        results.concat r
+      else
+        longest = [subpath.basename.to_s.length, longest].max
+        type    = %x[file #{subpath}].gsub(/#{subpath}:\s/, '')
+
+        results << [subpath.basename, type]
+      end
+    end
+  elsif path.exist? then
     type    = %x[file #{path}].gsub(/^#{path}:\s/, '')
-
-    [path.basename, type]
+    results << [path.basename, type]
+  else
+    results << [path.basename, "PATH NOT FOUND"]
   end
 
   [results, longest]
 end
 
+recourse = ARGV.detect{|a| a == '-r' } ? Float::INFINITY : 0
+ARGV.reject!{|a| a == '-r' } if recourse
+
 if ARGV.empty? then
-  results, longest = dir_types Pathname.pwd
+  results, longest = dir_types Pathname.pwd, recourse
 else
   longest = 0
-  results = Array.new
-  ARGV.each do |p|
-    path    = Pathname.new p
-    longest = [path.basename.to_s.length, longest].max
-    if path.directory? then
-      r, l = dir_types path
-      results += r
-      longest = [l, longest].max
-    elsif path.exist? then
-      type    = %x[file #{path}].gsub(/^#{path}:\s/, '')
-      results << [path.basename, type]
-    else
-      results << [path.basename, "PATH NOT FOUND"]
-    end
+  results = ARGV.each_with_object Array.new do |dir, list|
+    r, l = dir_types dir, recourse
+    longest = [l, longest].max
+    list.concat r
   end
 end
 
