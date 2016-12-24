@@ -5,6 +5,7 @@ require 'pathname'
 class WhatKind
 
   class Entry
+    include Comparable
     def initialize path
       @path = Pathname.new path
     end
@@ -24,6 +25,10 @@ class WhatKind
 
     def name
       @path.basename.to_s
+    end
+
+    def <=> other
+      self.name <=> other
     end
   end
 
