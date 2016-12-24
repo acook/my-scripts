@@ -15,7 +15,7 @@ class WhatKind
       if @type then
         @type
       elsif path.exist? then
-        @type = %x[file #{path}].gsub(/^#{path}:\s+/, '').strip
+        @type = %x[file '#{path}'].gsub(/^#{path}:\s+/, '').strip
       else
         @type = '(FILE NOT FOUND)'
       end
