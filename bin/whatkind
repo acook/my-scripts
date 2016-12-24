@@ -181,6 +181,7 @@ class WhatKind
         Formatter.new(wrap path).render @options, longest
       end
 
+    ensure
       print Theme.reset
     end
 
