@@ -245,7 +245,7 @@ class WhatKind
       puts "\tshows colorized and structured libmagic types"
       puts
       puts "\t-r\trecourse infinite"
-      puts "\t--recourse DEPTCH\t recourse to depth"
+      puts "\t--recourse DEPTH\t recourse to depth"
       puts "\t-h\tshow this help"
       puts "\t<paths>\ta list of zero or more paths"
       puts "\t\twill scan PWD if no path supplied"
