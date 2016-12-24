@@ -157,7 +157,7 @@ class WhatKind
   end
 
   class CLI
-    def initialize args
+    def parse_args args
       @options = Options.new
       skip = nil
       @paths = args.each_with_object(Array.new).with_index do |(arg, paths), i|
@@ -172,6 +172,8 @@ class WhatKind
           paths << arg
         end
       end
+
+      self # make chainable since there is no meaningful return value
     end
 
     def run
@@ -231,4 +233,4 @@ class WhatKind
 
 end
 
-WhatKind::CLI.new(ARGV).run
+WhatKind::CLI.new.parse_args(ARGV).run
