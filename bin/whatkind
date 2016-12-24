@@ -43,10 +43,14 @@ class WhatKind
       @children ||= get_children
     end
 
+    def children_count
+      @children_count ||= raw_children.length
+    end
+
     def get_children
       dirs  = Array.new
       files = Array.new
-      path.children.sort.each do |child|
+      raw_children.sort.each do |child|
         if child.directory? then
           dirs.push Directory.new child
         else
@@ -57,15 +61,19 @@ class WhatKind
       files + dirs
     end
 
+    def raw_children
+      @raw_children ||= path.children
+    end
+
     def longest
       @longest ||= children.map{|c| c.name.length }.max
     end
 
     def type
-      if children.empty? then
+      unless children_count > 0 then
         super + " (empty)"
       else
-        super + " (#{children.length})"
+        super + " (#{children_count})"
       end
     end
   end
@@ -143,7 +151,7 @@ class WhatKind
 
     def render_recourse entry, recourse_depth, parent_longest, indent = 0
       if entry.directory? then
-        if entry.children.empty? then
+        unless entry.children_count > 0 then
           line entry, parent_longest, indent
         else
           line entry, parent_longest, indent
