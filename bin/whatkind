@@ -34,15 +34,19 @@ class WhatKind
 
   class Directory < Entry
     def children
-      @children ||= path.children.sort do |child|
-        child.directory? ? 1 : 0
-      end.map do |child|
+      @children ||= get_children
+    end
+
+    def get_children
+      sep = path.children.each_with_object({dirs: Array.new, files: Array.new}) do |child, all|
         if child.directory? then
-          Directory.new child
+          all[:dirs].push Directory.new child
         else
-          Entry.new child
+          all[:files].push Entry.new child
         end
       end
+
+      sep[:dirs].sort + sep[:files].sort
     end
 
     def longest
