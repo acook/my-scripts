@@ -74,10 +74,12 @@ class WhatKind
     def type
       if children_count > 0 then
         super + " (#{children_count})"
-      elsif children_count < 0 then
-        super + " (unknown - permissions denied)"
-      else
+      elsif children_count == 0 then
         super + " (empty)"
+      elsif children_count < 0 then
+        super + " (permission denied)"
+      else
+        super + " (unknown)"
       end
     end
   end
