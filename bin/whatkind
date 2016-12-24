@@ -45,6 +45,8 @@ class WhatKind
 
     def children_count
       @children_count ||= raw_children.length
+    rescue Errno::EACCES => error
+      -1
     end
 
     def get_children
@@ -70,10 +72,12 @@ class WhatKind
     end
 
     def type
-      unless children_count > 0 then
-        super + " (empty)"
-      else
+      if children_count > 0 then
         super + " (#{children_count})"
+      elsif children_count < 0 then
+        super + " (unknown - permissions denied)"
+      else
+        super + " (empty)"
       end
     end
   end
