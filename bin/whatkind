@@ -179,7 +179,12 @@ class WhatKind
     end
 
     def run
-      walk @recourse
+      longest = paths.map{|path| path.length }.max
+
+      paths.each do |path|
+        Formatter.new(wrap path).render @recourse, longest
+      end
+
       print Theme.reset
     end
 
@@ -188,14 +193,6 @@ class WhatKind
         @paths = Array(Pathname.pwd.to_s)
       else
         @paths
-      end
-    end
-
-    def walk recourse = 0
-      longest = paths.map{|path| path.length }.max
-
-      paths.each do |path|
-        Formatter.new(wrap path).render recourse, longest
       end
     end
 
