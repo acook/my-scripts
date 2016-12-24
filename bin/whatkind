@@ -119,7 +119,7 @@ class WhatKind
     extend Color
 
     COLOR_MAP = {
-      /broken|NOT FOUND/ => bg(:red),
+      /broken|NOT FOUND|cannot open/ => bg(:red),
       /bash|Bourne/      => fg(:green),
       /zsh/              => fg(:blue),
       /shell|SHELL/      => fg(:magenta),
