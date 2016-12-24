@@ -65,6 +65,12 @@ class WhatKind
   end
 
   class Theme
+    class << self
+      def reset
+        "\033[0m\033[K"
+      end
+    end
+
     def colors
       @colors ||= {
         /bash|Bourne/      => fg(:green),
@@ -142,7 +148,7 @@ class WhatKind
 
     def line entry, longest, indent
       print Theme.new(entry).color, (' ' * (indent * 2)),
-        entry.name.ljust(longest), ?\t, entry.type, ?\n
+        entry.name.ljust(longest), ?\t, entry.type, Theme.reset, ?\n
     end
   end
 
@@ -170,6 +176,7 @@ class WhatKind
 
     def run
       walk @recourse
+      print Theme.reset
     end
 
     def paths
