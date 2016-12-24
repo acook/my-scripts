@@ -166,8 +166,29 @@ class WhatKind
     end
 
     def line entry, longest, indent
-      print Theme.new(entry).color, (' ' * (indent * 2)),
-        entry.name.ljust(longest), ?\t, entry.type, Theme.reset_line, ?\n
+      text = [indentation(indent), entry.name.ljust(longest), div, entry.type].join
+      if text.length > console_width then
+        text = text[0,(console_width-1)] + "…"
+      end
+      print Theme.new(entry).color, text, Theme.reset_line, ?\n
+    end
+
+    def indentation size
+      ' ' * (size * 2)
+    end
+
+    def div
+      '  '
+    end
+
+    def console_width
+      tiocgwinsz = 0x40087468
+      str = [0, 0, 0, 0].pack('SSSS')
+      unless $stdout.ioctl(tiocgwinsz, str) < 0 then
+        str.unpack('SSSS')[1]
+      else
+        Float::INFINITY
+      end
     end
   end
 
