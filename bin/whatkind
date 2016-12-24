@@ -131,19 +131,19 @@ class WhatKind
       @root = root
     end
 
-    def render recourse = 0, parent_longest = 0
-      render_recourse @root, recourse, parent_longest
+    def render options, parent_longest = 0
+      render_recourse @root, options.recourse, parent_longest
     end
 
-    def render_recourse entry, recourse, parent_longest, indent = 0
+    def render_recourse entry, recourse_depth, parent_longest, indent = 0
       if entry.directory? then
         if entry.children.empty? then
           line entry, parent_longest, indent
         else
           line entry, parent_longest, indent
           entry.children.each do |child|
-            render_recourse child, (recourse - 1), entry.longest, (indent + 1)
-          end unless recourse < 1
+            render_recourse child, (recourse_depth - 1), entry.longest, (indent + 1)
+          end unless recourse_depth < 1
         end
       else
         line entry, parent_longest, indent
@@ -158,13 +158,13 @@ class WhatKind
 
   class CLI
     def initialize args
-      @recourse = 1
+      @options = Options.new
       skip = nil
       @paths = args.each_with_object(Array.new).with_index do |(arg, paths), i|
         if arg == '-r' then
-          @recourse = Float::INFINITY
+          @options.recourse = Float::INFINITY
         elsif arg == '--recourse' then
-          @recourse += args[i + 1].to_i
+          @options.recourse += args[i + 1].to_i
           skip = i + 1
         elsif %w[-h --help].include? arg then
           usage
@@ -174,15 +174,11 @@ class WhatKind
       end
     end
 
-    def recourse?
-      @recourse > 0
-    end
-
     def run
       longest = paths.map{|path| path.length }.max
 
       paths.each do |path|
-        Formatter.new(wrap path).render @recourse, longest
+        Formatter.new(wrap path).render @options, longest
       end
 
       print Theme.reset
@@ -215,6 +211,20 @@ class WhatKind
       puts "\t<paths>\ta list of zero or more paths"
       puts "\t\twill scan PWD if no path supplied"
       exit 0
+    end
+  end
+
+  class Options
+    def recourse
+      @recourse ||= 1
+    end
+
+    def recourse= depth
+      @recourse = depth
+    end
+
+    def recourse?
+      @recourse > 0
     end
   end
 
