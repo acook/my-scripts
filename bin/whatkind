@@ -46,7 +46,7 @@ class WhatKind
         end
       end
 
-      sep[:dirs].sort + sep[:files].sort
+      sep[:files].sort + sep[:dirs].sort
     end
 
     def longest
@@ -131,7 +131,7 @@ class WhatKind
           line entry, parent_longest, indent
           entry.children.each do |child|
             render_recourse child, (recourse - 1), entry.longest, (indent + 1)
-          end
+          end unless recourse < 1
         end
       else
         line entry, parent_longest, indent
@@ -146,12 +146,13 @@ class WhatKind
 
   class CLI
     def initialize args
+      @recourse = 1
       skip = nil
       @paths = args.each_with_object(Array.new).with_index do |(arg, paths), i|
         if arg == '-r' then
           @recourse = Float::INFINITY
         elsif arg == '--recourse' then
-          @recourse = args[i + 1].to_i
+          @recourse += args[i + 1].to_i
           skip = i + 1
         elsif %w[-h --help].include? arg then
           usage
@@ -162,7 +163,7 @@ class WhatKind
     end
 
     def recourse?
-      @recourse
+      @recourse > 0
     end
 
     def run
@@ -171,7 +172,7 @@ class WhatKind
 
     def paths
       if @paths.empty?
-        @paths = Array(Pathname.pwd)
+        @paths = Array(Pathname.pwd.to_s)
       else
         @paths
       end
