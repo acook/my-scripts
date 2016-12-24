@@ -52,6 +52,14 @@ class WhatKind
     def longest
       @longest ||= children.map{|c| c.name.length }.max
     end
+
+    def type
+      if children.empty? then
+        super + " (empty)"
+      else
+        super + " (#{children.length})"
+      end
+    end
   end
 
   class Theme
