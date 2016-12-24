@@ -118,7 +118,7 @@ class WhatKind
       /broken|NOT FOUND/ => bg(:red),
       /bash|Bourne/      => fg(:green),
       /zsh/              => fg(:blue),
-      /shell|SHELL/      => fg(:purple),
+      /shell|SHELL/      => fg(:magenta),
       /perl/             => fg(:yellow),
       /ruby/             => fg(:red),
       /python/           => fg(:cyan),
@@ -126,7 +126,7 @@ class WhatKind
       /link|socket/      => fgb(:yellow),
       /directory/        => fgb(:black),
       /program/          => fgb(:yellow),
-      /GIF/              => fgb(:purple),
+      /GIF/              => fgb(:magenta),
     }
 
     def initialize entry
