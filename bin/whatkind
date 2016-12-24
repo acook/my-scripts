@@ -12,7 +12,13 @@ class WhatKind
     attr :path
 
     def type
-      @type ||= %x[file #{@path}].gsub(/^#{@path}:\s+/, '').strip
+      if @type then
+        @type
+      elsif path.exist? then
+        @type = %x[file #{path}].gsub(/^#{path}:\s+/, '').strip
+      else
+        @type = '(FILE NOT FOUND)'
+      end
     end
 
     def children
@@ -73,7 +79,7 @@ class WhatKind
 
     def colors
       @colors ||= {
-        /broken|NOT FOUND|cannot open/ => bg(:red),
+        /broken|NOT FOUND/ => bg(:red),
         /bash|Bourne/      => fg(:green),
         /zsh/              => fg(:blue),
         /shell|SHELL/      => fg(:purple),
