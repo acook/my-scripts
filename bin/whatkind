@@ -79,38 +79,54 @@ class WhatKind
   end
 
   class Theme
-    class << self
-      def reset
+    module Color
+      def reset_line
         "\033[0m\033[K"
       end
+
+      def fg color_name
+        esc style(:normal), "3#{color color_name}"
+      end
+
+      def fgb color_name
+        esc style(:bright), "3#{color color_name}"
+      end
+
+      def bg color_name
+        esc style(:normal), "4#{color color_name}"
+      end
+
+      def esc style, color_code
+        "\033[#{style};#{color_code}m"
+      end
+
+      def color name
+        COLORS.index name
+      end
+
+      def style name
+        STYLES.index name
+      end
+
+      COLORS = %i[black red green yellow blue magenta cyan white]
+      STYLES = %i[normal bright underlined]
     end
 
-    def colors
-      @colors ||= {
-        /broken|NOT FOUND/ => bg(:red),
-        /bash|Bourne/      => fg(:green),
-        /zsh/              => fg(:blue),
-        /shell|SHELL/      => fg(:purple),
-        /perl/             => fg(:yellow),
-        /ruby/             => fg(:red),
-        /python/           => fg(:cyan),
-        /x86|i386/         => fgb(:blue),
-        /link|socket/      => fgb(:yellow),
-        /directory/        => fgb(:black),
-        /program/          => fgb(:yellow),
-        /GIF/              => fgb(:purple),
-      }
-    end
+    extend Color
 
     COLOR_MAP = {
-      black:  0,
-      red:    1,
-      green:  2,
-      yellow: 3,
-      blue:   4,
-      purple: 5,
-      cyan:   6,
-      white:  7,
+      /broken|NOT FOUND/ => bg(:red),
+      /bash|Bourne/      => fg(:green),
+      /zsh/              => fg(:blue),
+      /shell|SHELL/      => fg(:purple),
+      /perl/             => fg(:yellow),
+      /ruby/             => fg(:red),
+      /python/           => fg(:cyan),
+      /x86|i386/         => fgb(:blue),
+      /link|socket/      => fgb(:yellow),
+      /directory/        => fgb(:black),
+      /program/          => fgb(:yellow),
+      /GIF/              => fgb(:purple),
     }
 
     def initialize entry
@@ -118,26 +134,11 @@ class WhatKind
     end
 
     def color
-      colors.detect do |regex, ansi|
+      COLOR_MAP.detect do |regex, ansi|
         break ansi if regex =~ @entry.type
       end || "\033[0m"
     end
 
-    def fg color_name
-      esc 0, "3#{COLOR_MAP[color_name]}"
-    end
-
-    def fgb color_name
-      esc 1, "3#{COLOR_MAP[color_name]}"
-    end
-
-    def bg color_name
-      esc 0, "4#{COLOR_MAP[color_name]}"
-    end
-
-    def esc style, color_code
-      "\033[#{style};#{color_code}m"
-    end
   end
 
   class Formatter
@@ -166,7 +167,7 @@ class WhatKind
 
     def line entry, longest, indent
       print Theme.new(entry).color, (' ' * (indent * 2)),
-        entry.name.ljust(longest), ?\t, entry.type, Theme.reset, ?\n
+        entry.name.ljust(longest), ?\t, entry.type, Theme.reset_line, ?\n
     end
   end
 
@@ -198,7 +199,7 @@ class WhatKind
       end
 
     ensure
-      print Theme.reset
+      print Theme.reset_line
     end
 
     def paths
