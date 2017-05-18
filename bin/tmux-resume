@@ -1,0 +1,48 @@
+#!/bin/bash
+
+default_shell="bash"
+
+# use brewed utils if available
+# TODO: detect tmux and the default_shell and provide error msgs if not found
+if [[ -x /usr/local/bin/brew ]]; then
+  # TODO: find homebrew/linuxbrew and ask for its prefix
+  #prefix="$(brew --prefix)/bin"
+  prefix="/usr/local/bin"
+  tmux_prefix="$prefix"
+  shell_prefix="$prefix"
+else
+  tmux_prefix="/usr/bin"
+  shell_prefix="/bin"
+fi
+
+tmux="$tmux_prefix/tmux"
+
+# whether or not to enable tmux-iTerm integration
+if [[ $TERM_PROGRAM == "iTerm.app" ]]; then
+  opts="-CC" # enable integration with iTerm
+  config="/dev/null" # iTerm-tmux integration doesn't play well with configs
+else
+  opts="" # nothing fancy
+  config="$HOME/.tmux.conf" # we assume this exists
+fi
+
+# args or no args passed in?
+if [[ $# -gt 0 ]]; then
+  # run the provided command in a tmux window
+  name=$(basename "$1")
+  cmd=$*
+else
+  # no args provided, so attach to existing session if available
+  # otherwise create a new session with bash
+  name="main"
+  cmd="$shell_prefix/$default_shell"
+fi
+
+# detect if there's already a session with that name
+if $tmux has-session -t "$name"; then
+  # connect to the existing session
+  $tmux attach -t "$name" -d
+else
+  # create a new session
+  $tmux -f "$config" $opts new -s "$name" -c "$cmd"
+fi
