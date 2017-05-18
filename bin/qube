@@ -1,0 +1,76 @@
+#!/usr/bin/env bash
+
+KUBEHOME=$HOME/.kube
+KUBEREPO=$KUBEHOME/repo
+KUBETEMP=temp
+
+export PATH=$PATH:$KUBEHOME
+
+mkdir -p $KUBEHOME > /dev/null
+cd $KUBEHOME
+
+if ! [[ -x minikube ]]; then
+  echo " -- beginning minikube setup..."
+
+  if ! [[ -x VBoxManage ]]; then
+    echo " -- WAITING - install VirtualBox first then press return"
+    read -p
+  fi
+
+  echo " -- downloading minikube..."
+  \curl -Lo minikube https://storage.googleapis.com/minikube/releases/v0.15.0/minikube-darwin-amd64
+  chmod +x minikube
+
+  echo " -- downloading kubectl..."
+  \curl -Lo kubectl https://storage.googleapis.com/kubernetes-release/release/v1.5.1/bin/darwin/amd64/kubectl
+  chmod +x kubectl
+
+  echo " -- downloading kubernetes files..."
+  git clone https://github.com/kubernetes/kubernetes.git "$KUBEREPO"
+  git checkout "release-1.3"
+
+  echo " -- running minikube setup, this might take a few minutes, so relax..."
+  minikube start --max_retries 1
+  minikube stop
+
+  echo " -- creating VirtualBox host-only interface..."
+  vbox_interface=$(VBoxManage hostonlyif create | cut -d "'" -f2)
+  echo " -- NOTE your VirtualBox interface is: $vbox_interface"
+
+  echo " -- connecting minikube to host-only interface..."
+  VBoxManage modifyvm minikube --nic3 hostonly --cableconnected3 on --hostonlyadapter3 "$vbox_interface"
+
+  # basically minikube chokes on our VPN
+  # https://github.com/jupyterhub/kubespawner/blob/master/SETUP.md
+  # http://stackoverflow.com/questions/41751669/how-do-i-run-minikube-from-behind-a-vpn
+
+  echo " -- minikube setup complete!"
+
+  # to setup RabbitMQ...
+  # https://kubernetes.io/docs/user-guide/jobs/work-queue-1/
+fi
+
+export NO_PROXY=$NO_PROXY,$(minikube ip)
+export no_proxy=$no_proxy,$(minikube ip)
+
+if [[ -z $1 ]]; then
+  echo " -- starting minikube..."
+  minikube start
+
+  echo " -- dumping basic info"
+  kubectl get nodes
+  kubectl cluster-info
+elif [[ $1 == ":rabbitmq" ]]; then
+  echo " -- installing rabbitmq..."
+  kubectl create -f "$KUBEREPO/examples/celery-rabbitmq/rabbitmq-service.yaml"
+  kubectl create -f "$KUBEREPO/examples/celery-rabbitmq/rabbitmq-controller.yaml"
+elif [[ $1 == ":temp" ]]; then
+  kubectl run -i --tty $KUBETEMP --image ubuntu:14.04
+  #kubectl exec $KUBETEMP apt-get update
+  #kubectl exec $KUBETEMP apt-get install -y curl ca-certificates amqp-tools python dnsutils
+  #kubectl exec $KUBETEMP wget https://raw.githubusercontent.com/rabbitmq/rabbitmq-management/rabbitmq_v3_6_6/bin/rabbitmqadmin
+  #kubectl exec $KUBETEMP chmod +x rabbitmqadmin
+else
+  minikube "$@"
+fi
+
