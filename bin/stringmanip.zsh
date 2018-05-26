@@ -1,3 +1,5 @@
+#!/usr/bin/env zsh
+
 command="grep \"foo\" -C 2"
 
 #array=("${(w):-$command}")

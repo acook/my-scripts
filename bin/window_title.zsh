@@ -1,3 +1,5 @@
+#!/usr/bin/env zsh
+
 source ~/bin/prompt_helpers
 
 # update window title with directory

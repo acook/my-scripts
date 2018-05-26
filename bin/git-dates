@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 
-# usage: Shows the date of the most recent commit for each branch
+exit puts("usage: #{File.basename $0}\n\tshow the date of the most recent commit for each branch").to_i if !(ARGV & %w[-h --help help]).empty?
 
 require 'date'
 

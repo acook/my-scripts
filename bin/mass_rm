@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+
+[[ -z $2 ]] && echo -e "usage: $0 file_list.txt regex\n\tdeletes all the files from the list that match regex"
+
 file="$1"
 patt="$2"
 cmd="rm -v --preserve-root --one-file-system -I"

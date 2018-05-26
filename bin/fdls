@@ -1,13 +1,6 @@
 #!/usr/bin/env bash
-#--login
-
-#rvm use 2@fdls
 
 # list PIDs with their non-txt-type file descriptors count
 for pid in `ps aux | tail -n +2 | awk '{print $2}'`; do
   FCOUNT=`lsof -p $pid | grep -v " txt " | wc -l`; echo "PID: $pid $FCOUNT";
 done | sort -nk3
-
-#/usr/bin/env ruby <<-EORUBY
-#  puts 'This is ruby!'
-#EORUBY

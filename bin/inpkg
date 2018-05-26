@@ -1,3 +1,5 @@
 #!/usr/bin/env bash
 
+[[ -z $1 ]] && echo "usage: $0 package" && exit 1
+
 sudo installer -pkg "$1" -target /

@@ -1,4 +1,9 @@
-#!/bin/sh
+#!/bin/bash
+
+if [[ -z $# < 3 ]]; then
+  echo "usage: $0 old_author@example.com new_author_name new_author@example.com"
+  exit 1
+fi
 
 git filter-branch --env-filter '
 
