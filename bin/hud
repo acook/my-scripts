@@ -1,3 +1,0 @@
-export HUDSON_HOME=~/Pork/hudson
-cd $HUDSON_HOME
-java -jar hudson.war

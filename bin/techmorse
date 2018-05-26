@@ -1,4 +1,0 @@
-#!/usr/bin/ruby
-require 'morse'
-
-puts Morse.encode(ARGV.join(' ')).gsub('-', ':')

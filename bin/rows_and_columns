@@ -1,5 +1,0 @@
-#!/bin/zsh
-# Just displays the number of rows and columns in the current window
-# The same command works in bash, but zsh actually documented it, so I figured I'd use it.
-
-echo $LINES rows x $COLUMNS columns
