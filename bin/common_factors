@@ -1,33 +1,34 @@
-#!/usr/bin/ruby
+#!/usr/bin/env ruby
 # common factorization script
 # usage: just pass it a list of numbers to factor, -v for verbose
-# by xybre September 2010 bitbucket.org/xybre xybreus@gmail.com
+# by Anthony M. Cook September 2010-2018 https://github.com/acook
 
-# Grab the name of the command we're running (if you have a weird commandline, this might return weird results).
-command = $0.split('/').last
-
-# If any of the arguments request help (or the user hasn't passed in any arguments) then exit with usage.
-exit puts("#{command} - Find common factors\nUsage: #{command} INTEGER [INTEGER]...").to_i if ARGV.empty? || !(ARGV & %w{-h -? --help}).empty?
+# Grab the name of the command we're running.
+command = File.basename($0)
 
 # Set the verbose flag, will be nil rather than false, but this won't impact the conditionals.
 verbose = ARGV.delete '-v' 
+
+# If any of the arguments request help (or the user hasn't passed in any arguments) then exit with usage.
+exit puts("#{command} - Find common factors\nUsage: #{command} INTEGER [INTEGER]...").to_i if ARGV.empty? || !(ARGV & %w{-h -? --help}).empty?
 
 # Now we're going to test those factors against the other numbers the user passed in.
 # Announce it to the user if they want to know.
 
 # Grab the first argument and calculate all the divisors that go evenly into it.
 seed = ARGV.shift.to_i
-printf "testing: #{seed.to_s}" if verbose 
-divisors = (1..seed).select{|n| !(printf('.') if verbose) if seed % n == 0}
+print "testing: #{seed.to_s}" if verbose
+divisors = (1..seed).select{|n| print('.') if verbose; seed % n == 0}
 
 # Iterate through each number and test it against the divisors.
+factors = []
 ARGV.each do |number|
   # Display the number we're testing against.
-  printf number if verbose
+  print number if verbose
   # Here's where we actually test the divisors.
   # It also prints out a dot for each divisor that factors.
-  @factors = divisors.select{|divisor| !(printf('.') if verbose) if number.to_i % divisor == 0}
+  factors = divisors.select{|divisor| !(print('.') if verbose) if number.to_i % divisor == 0}
 end
 
-printf "\ncommon factors: " if verbose
-puts @factors.join ', '
+print "\ncommon factors: " if verbose
+puts (ARGV.empty? ? divisors : factors).join(', ')
