@@ -1,6 +1,7 @@
 #!/usr/bin/env ruby
 
 require "rbconfig"
+require "pathname"
 
 module DNS
     OS = RbConfig::CONFIG["host_os"]
@@ -48,13 +49,33 @@ module DNS
             end
         end
 
-        def swap!
-            current_ipv4 = manager.current_ipv4
+        def provider name
+            PROVIDERS[name.downcase.to_sym]
+        end
+    end
 
+    class CLI
+        def initialize args
+            @command = args.shift
+            @args = args
+        end
+        attr_reader :args, :command
+
+        COMMANDS = %i[swap show set]
+
+        def parse_args
+            return :show unless command
+            method = command.downcase.to_sym
+            return method if COMMANDS.include? method
+
+            :usage
+        end
+
+        def swap
             print "Old DNS: "
-            puts manager.current_ipv4.join " "
+            puts current_ipv4_string
 
-            new_dns = if manager.current_ipv4.include? provider(:default)[:ipv4].first
+            new_dns = if is_current_default?
                 print "Swapping to DHCP-provided DNS: "
                 :dhcp
             else
@@ -64,23 +85,61 @@ module DNS
 
             set new_dns
             
-            puts manager.current_ipv4.join " "
+            puts current_ipv4_string
         end
 
         def set name
-            if name.downcase.to_sym == :dhcp
-                manager.set_ipv4 manager.dhcp
+            new_ipv4 = if name.downcase.to_sym == :dhcp
+                manager.dhcp
             elsif PROVIDERS.keys.include? name
-                manager.set_ipv4 provider(name)[:ipv4]
+                DNS.provider(name)[:ipv4]
             elsif /\b((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(\.|$)){4}\b/ =~ name
-                manager.set_ipv4 name
+                name
             else
                 warn "Unrecongized provider name or IP address: #{name}"
+                exit 254
             end
+
+            manager.set_ipv4 new_ipv4
         end
 
-        def provider name
-            PROVIDERS[name.downcase.to_sym]
+        def show
+            print "Current DNS: "
+            puts current_ipv4_string
+        end
+
+        def usage
+            puts "usage: #{Pathname.new($0).basename} [COMMAND] [PROVIDER...]"
+            puts "\ta simple DNS manager"
+            puts "commands:"
+            puts "\tshow\t\tshow the current DNS settings"
+            puts "\tswap\t\tuse secure public DNS servers or switch back to DHCP"
+            puts "\tset PROVIDER\tspecify the provider name or IP address(es) you wish to use"
+            puts "\thelp\t\tyou're looking at it"
+            puts "known providers:"
+            print "\t", PROVIDERS.map{|provider, dns| "#{provider}\t\t#{dns[:ipv4].join(" ")}" }.join("\n\t")
+            puts
+        end
+
+        def perform!
+            self.send parse_args
+        rescue
+            usage
+            raise
+        end
+
+        protected
+
+        def is_current_default?
+            current_ipv4_string.include? DNS.provider(:default)[:ipv4].first
+        end
+
+        def current_ipv4_string
+            manager.current_ipv4.join " "
+        end
+
+        def manager
+            DNS.manager
         end
     end
 
@@ -109,5 +168,4 @@ module DNS
     end
 end
 
-DNS.swap! if $PROGRAM_NAME == __FILE__
-    
+DNS::CLI.new(ARGV).perform! if $PROGRAM_NAME == __FILE__
