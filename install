@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 
-cd `dirname $0`
+cd "$(dirname $0)"
 
-dir=`pwd`
+dir="$(pwd)"
 bin_dir_name=bin
 xbin_dir_name=xbin
-bin_dir=$dir/$bin_dir_name
-xbin_dir=$dir/$xbin_dir_name
+bin_dir="$dir/$bin_dir_name"
+xbin_dir="$dir/$xbin_dir_name"
 
 echo Pulling remote submodules...
 git submodule update --init --recursive --remote
@@ -16,7 +16,7 @@ echo Preparing external binaries...
 find=find
 mode=/111
 if [[ $(uname) == Darwin ]]; then
-  if command -v "gfind" > /dev/null 2>&1; then
+  if command -v gfind > /dev/null 2>&1; then
     find=gfind
   else
     mode=+111
@@ -24,10 +24,10 @@ if [[ $(uname) == Darwin ]]; then
 fi
 
 echo getting list of executables from submodules and creating symlinks...
-$find "$(cd external; pwd)" -maxdepth 3 -type f -perm $mode -exec ln -s -v -f {} $xbin_dir \;
+$find "$(cd external; pwd)" -maxdepth 3 -type f -perm $mode -exec ln -s -v -f {} "$xbin_dir" \;
 
 echo Creating symlinks to folders...
-ln -s -v $dir/$bin_dir_name ~/
-ln -s -v $dir/$xbin_dir_name ~/
+ln -s -v "$dir/$bin_dir_name" ~/
+ln -s -v "$dir/$xbin_dir_name" ~/
 
 echo Done!
