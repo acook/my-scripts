@@ -1,2 +1,2 @@
-#/user/bin/bash
+#/usr/bin/env bash
 mysqladmin -u root -p shutdown
