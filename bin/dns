@@ -48,28 +48,18 @@ module DNS
                 exit 255
             end
         end
-
-        def provider name
-            PROVIDERS[name.downcase.to_sym]
-        end
     end
 
     class CLI
-        def initialize args
+        def initialize args, manager = DNS.manager, providers = DNS::PROVIDERS
             @command = args.shift
             @args = args
+            @manager = manager
+            @providers = providers
         end
-        attr_reader :args, :command
+        attr_reader :args, :command, :manager, :providers
 
         COMMANDS = %i[swap show set]
-
-        def parse_args
-            return :show unless command
-            method = command.downcase.to_sym
-            return method if COMMANDS.include? method
-
-            :usage
-        end
 
         def swap
             print "Old DNS: "
@@ -79,28 +69,22 @@ module DNS
                 print "Swapping to DHCP-provided DNS: "
                 :dhcp
             else
-                print "Swapping to CloudFlare DNS: "
+                print "Swapping to secure public DNS: "
                 :default
             end
 
-            set new_dns
+            set_dns new_dns
             
             puts current_ipv4_string
         end
 
-        def set name
-            new_ipv4 = if name.downcase.to_sym == :dhcp
-                manager.dhcp
-            elsif PROVIDERS.keys.include? name
-                DNS.provider(name)[:ipv4]
-            elsif /\b((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(\.|$)){4}\b/ =~ name
-                name
-            else
-                warn "Unrecongized provider name or IP address: #{name}"
-                exit 254
-            end
+        def set *args
+            print "Old DNS: "
+            puts current_ipv4_string
 
-            manager.set_ipv4 new_ipv4
+            set_dns *args
+
+            show
         end
 
         def show
@@ -117,29 +101,52 @@ module DNS
             puts "\tset PROVIDER\tspecify the provider name or IP address(es) you wish to use"
             puts "\thelp\t\tyou're looking at it"
             puts "known providers:"
-            print "\t", PROVIDERS.map{|provider, dns| "#{provider}\t\t#{dns[:ipv4].join(" ")}" }.join("\n\t")
+            print "\t", providers.map{|provider, dns| "#{provider}\t\t#{dns[:ipv4].join(" ")}" }.join("\n\t")
             puts
         end
 
         def perform!
-            self.send parse_args
-        rescue
-            usage
-            raise
+            method = parse_command
+            case method
+            when :set
+                set *args
+            else
+                self.send method
+            end
         end
 
         protected
 
+        def set_dns name_raw
+            name = name_raw.downcase.to_sym
+            new_ipv4 = if name == :dhcp
+                manager.dhcp
+            elsif providers.keys.include? name
+                providers[name][:ipv4]
+            elsif /\b((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(\.|$)){4}\b/ =~ name_raw
+                name
+            else
+                warn "Unrecongized provider name or IP address: #{name_raw}"
+                exit 254
+            end
+
+            manager.set_ipv4 new_ipv4
+        end
+
+        def parse_command
+            return :show unless command
+            method = command.downcase.to_sym
+            return method if COMMANDS.include? method
+
+            :usage
+        end
+
         def is_current_default?
-            current_ipv4_string.include? DNS.provider(:default)[:ipv4].first
+            manager.current_ipv4.include? providers[:default][:ipv4].first
         end
 
         def current_ipv4_string
             manager.current_ipv4.join " "
-        end
-
-        def manager
-            DNS.manager
         end
     end
 
