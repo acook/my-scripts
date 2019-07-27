@@ -99,10 +99,22 @@ module DNS
             puts "\tshow\t\tshow the current DNS settings"
             puts "\tswap\t\tuse secure public DNS servers or switch back to DHCP"
             puts "\tset PROVIDER\tspecify the provider name or IP address(es) you wish to use"
+            puts "\ttodo\tmissing features"
             puts "\thelp\t\tyou're looking at it"
             puts "known providers:"
             print "\t", providers.map{|provider, dns| "#{provider}\t\t#{dns[:ipv4].join(" ")}" }.join("\n\t")
             puts
+        end
+
+        def todo
+            puts <<-TODO
+                - linux support
+                - windows support
+                - IPv6 support
+                - specify the device/adapter on the commandline
+                - attempt to guess the device or adaper when given the other
+                - load providers from file?
+            TODO
         end
 
         def perform!
