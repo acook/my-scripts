@@ -129,16 +129,16 @@ module DNS
 
         protected
 
-        def set_dns name_raw
-            name = name_raw.downcase.to_sym
+        def set_dns name_or_ips
+            name = name_or_ips.downcase.to_sym
             new_ipv4 = if name == :dhcp
                 manager.dhcp
             elsif providers.keys.include? name
                 providers[name][:ipv4]
-            elsif /\b((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(\.|$)){4}\b/ =~ name_raw
+            elsif /\b((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(\.|$)){4}\b/ =~ name_or_ips
                 name
             else
-                warn "Unrecongized provider name or IP address: #{name_raw}"
+                warn "Unrecongized provider name or IP address: #{name_or_ips}"
                 exit 254
             end
 
