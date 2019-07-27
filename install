@@ -9,20 +9,25 @@ bin_dir=$dir/$bin_dir_name
 xbin_dir=$dir/$xbin_dir_name
 
 echo Pulling remote submodules...
-git submodule init
-git submodule update
+git submodule update --init --recursive --remote
 
 echo Preparing external binaries...
 
-for f in external/*; do
-  echo getting list of executables from $f
-  find $f -maxdepth 2 -type f -perm /a+x -exec cp -v {} $xbin_dir/ \;
-  echo copying executables to $xbin_dir
-done
+find=find
+mode=/111
+if [[ $(uname) == Darwin ]]; then
+  if command -v "gfind" > /dev/null 2>&1; then
+    find=gfind
+  else
+    mode=+111
+  fi
+fi
 
+echo getting list of executables from submodules and creating symlinks...
+$find "$(cd external; pwd)" -maxdepth 3 -type f -perm $mode -exec ln -s -v -f {} $xbin_dir \;
 
-echo Creating symlinks...
-ln -s $dir/$bin_dir_name ~/
-ln -s $dir/$xbin_dir_name ~/
+echo Creating symlinks to folders...
+ln -s -v $dir/$bin_dir_name ~/
+ln -s -v $dir/$xbin_dir_name ~/
 
 echo Done!
