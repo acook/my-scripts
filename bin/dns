@@ -1,0 +1,113 @@
+#!/usr/bin/env ruby
+
+require "rbconfig"
+
+module DNS
+    OS = RbConfig::CONFIG["host_os"]
+
+    PROVIDERS = {
+        cloudflare: { # first fastest and private
+            ipv4: %w{1.1.1.1 1.0.0.1},
+            ipv6: %w{2606:4700:4700::1111 2606:4700:4700::1001}
+        },
+        google: { # second fastest
+            ipv4: %w{8.8.8.8 8.8.4.4},
+            ipv6: %w{2001:4860:4860::8888 2001:4860:4860::8844}
+        },
+        quad9: { # privacy-focused, third fastest
+            ipv4: %w{9.9.9.9 149.112.112.112},
+            ipv6: %w{2620:fe::fe 2620:fe::9}
+        },
+        opendns: { # logs DNS requests, fourth fastest
+            ipv4: %w{208.67.222.222 208.67.220.220},
+            ipv6: %w{2620:119:35::35 2620:119:53::53}
+        }
+    }
+
+    DEFAULT_PROVIDERS = %i[cloudflare quad9]
+
+    PROVIDERS.merge!(
+        {
+            default: {
+                ipv4: DEFAULT_PROVIDERS.map{ |name| PROVIDERS[name][:ipv4] }.flatten,
+                ipv6: DEFAULT_PROVIDERS.map{ |name| PROVIDERS[name][:ipv6] }.flatten
+            }
+        }
+    ) unless PROVIDERS[:default]
+
+    class << self
+        def manager
+            @manager ||= case OS
+            when /darwin/
+                MacOS
+            #when /linux/
+            #when /mswin|mingw/
+            else   
+                warn "Unknown OS: #{OS}"
+                exit 255
+            end
+        end
+
+        def swap!
+            current_ipv4 = manager.current_ipv4
+
+            print "Old DNS: "
+            puts manager.current_ipv4.join " "
+
+            new_dns = if manager.current_ipv4.include? provider(:default)[:ipv4].first
+                print "Swapping to DHCP-provided DNS: "
+                :dhcp
+            else
+                print "Swapping to CloudFlare DNS: "
+                :default
+            end
+
+            set new_dns
+            
+            puts manager.current_ipv4.join " "
+        end
+
+        def set name
+            if name.downcase.to_sym == :dhcp
+                manager.set_ipv4 manager.dhcp
+            elsif PROVIDERS.keys.include? name
+                manager.set_ipv4 provider(name)[:ipv4]
+            elsif /\b((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(\.|$)){4}\b/ =~ name
+                manager.set_ipv4 name
+            else
+                warn "Unrecongized provider name or IP address: #{name}"
+            end
+        end
+
+        def provider name
+            PROVIDERS[name.downcase.to_sym]
+        end
+    end
+
+    class MacOS
+        class << self
+            def current_ipv4
+                `networksetup -getdnsservers Wi-Fi`.split ?\n
+            end
+
+            def dhcp
+                `ipconfig getoption #{device} domain_name_server`
+            end
+
+            def set_ipv4 *new_dns
+                `networksetup -setdnsservers #{adapter} #{new_dns.join " "}`
+            end
+
+            def adapter
+                "Wi-Fi"
+            end
+
+            def device
+                "en0"
+            end
+        end
+    end
+end
+
+DNS.swap! if $PROGRAM_NAME == __FILE__
+    
