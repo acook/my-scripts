@@ -95,14 +95,16 @@ module DNS
         def usage
             puts "usage: #{Pathname.new($0).basename} [COMMAND] [PROVIDER...]"
             puts "\ta simple DNS manager"
+            puts
             puts "commands:"
             puts "\tshow\t\tshow the current DNS settings"
             puts "\tswap\t\tuse secure public DNS servers or switch back to DHCP"
             puts "\tset PROVIDER\tspecify the provider name or IP address(es) you wish to use"
-            puts "\ttodo\tmissing features"
+            puts "\ttodo\t\tmissing features"
             puts "\thelp\t\tyou're looking at it"
+            puts
             puts "known providers:"
-            print "\t", providers.map{|provider, dns| "#{provider}\t\t#{dns[:ipv4].join(" ")}" }.join("\n\t")
+            print "\t", providers.map{|provider, dns| "#{provider}#{provider.size < 8 ? ?\t : ''}\t#{dns[:ipv4].join(" ")}" }.join("\n\t")
             puts
         end
 
