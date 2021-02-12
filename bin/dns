@@ -43,7 +43,7 @@ module DNS
                 MacOS
             #when /linux/
             #when /mswin|mingw/
-            else   
+            else
                 warn "Unknown OS: #{OS}"
                 exit 255
             end
@@ -74,7 +74,7 @@ module DNS
             end
 
             set_dns new_dns
-            
+
             puts current_ipv4_string
         end
 
