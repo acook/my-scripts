@@ -1,0 +1,16 @@
+#!/usr/bin/env ruby
+
+# this file intended to contain electrical engineering calculators
+# currently just contains the one
+
+# calculates the output voltage of a voltage divider
+# - vin is the input voltage
+# - r1 is the first resistor ohms (closest to the input)
+# - r2 is the second resistor ohms (closest to ground)
+# if r1 == r2 then vout == vin/2
+# the larger r2 is compared to r1, the closer to the input voltage vout will be
+def voltdiv vin, r1, r2
+  _vout = vin * (r2 / (r1 + r2))
+end
+
+puts voltdiv *ARGV.map(&:to_f)
