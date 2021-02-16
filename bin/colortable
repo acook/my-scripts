@@ -1,12 +1,54 @@
-#!/bin/sh
-count=0
-for line in {17..231}; do
-  count=`expr $count + 1`
-  cube2=$cube2$(printf $'\e[38;05;%dm %03d' $line $line)
-  if test $(expr $count % 36) = 0; then
-      cube2=$cube2\\n
+#!/bin/bash
+tile() {
+  # how many chars a tile is
+  tilesize=5
+
+  from=$1
+  to=${2:-$1}
+  split=$3
+
+  columns=$(stty -a | grep -Po '(?<=columns )\d+') # char cols in current terminal
+  fit=$(($columns / $tilesize)) # number of tiles that can fit horizontally
+
+  wrap=${split:-fit}
+
+  count=0
+  for line in $(seq $from $to); do
+    count=$(expr $count + 1)
+      printf '\e[30;48;05;%dm %03d ' $line $line
+      if [[ $(($count % $wrap)) == 0 ]]; then
+        printf "\e[0m\e[K\n"
+      fi
+  done
+  printf "\e[0m\e[K"
+  if [[ -z $split ]]; then
+    echo
   fi
-done
+}
+
+tile 0 16
 echo
-printf "$cube2"
-printf "\e[m\n"
+
+# obviously we shouldn't include 16 here but it makes the table lay out a lot better
+if [[ -n $1 ]]; then
+  # if you pass in literally any argument the colors will be printed sequentially
+  tile 16 231 18 # 36 or 18 seems to work well
+else
+  # TODO: Do this with math instead of by hand
+  tile 16  33
+  tile 52  69
+  tile 88  105
+  tile 124 141
+  tile 160 177
+  tile 196 213
+
+  tile 34  51
+  tile 70  87
+  tile 106 123
+  tile 142 159
+  tile 178 195
+  tile 214 231
+fi
+
+echo
+tile 232 255 12
