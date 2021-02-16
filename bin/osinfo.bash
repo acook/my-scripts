@@ -6,11 +6,11 @@ UNAME=$(uname)
 # Detect platform
 case $UNAME in
   Darwin)        # OS X
-    export PLATFORM='osx'
+    PLATFORM='osx'
   ;;
 
   Linux)         # Linux
-    export PLATFORM='linux'
+    PLATFORM='linux'
 
     # Gather release info
     if [[ -n `command -v lsb_release` ]]; then
@@ -24,24 +24,36 @@ case $UNAME in
     # Detect distro
     case $RELEASE in
       ubuntu)
-        export DISTRO='ubuntu'
+        DISTRO='ubuntu'
         ;;
 
       gentoo)
-        export DISTRO='gentoo'
+        DISTRO='gentoo'
+        ;;
+
+      \"Solus\")
+        DISTRO='solus'
         ;;
 
       *)
-        echo 'Unknown distro' $RELEASE
+        echo 'Unknown distro' $RELEASE >&2
         exit 2
         ;;
     esac
     ;;
-
   *)
-    echo 'Unknown platform' $UNAME
+    echo 'Unknown platform' $UNAME >&2
     exit 1
     ;;
 esac
 
-echo $PLATFORM $DISTRO | sed 's/ /\n/'
+# so this can be sourced as a library
+export DISTRO
+export PLATFORM
+
+if [[ $1 == "-w" ]]; then
+  echo $PLATFORM $DISTRO
+else
+  echo $PLATFORM
+  echo $DISTRO
+fi
