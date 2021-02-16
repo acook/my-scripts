@@ -31,12 +31,14 @@ do
   esac
 done
 
-if [[ -z $(command -v pbcopy) ]]; then
+command_exists() { command -v "$1" > /dev/null 2>&1; }
+
+if ! command_exists pbcopy; then
 
   # try linux with X
-  if [[ -n $(command -v xclip) ]]; then
-    alias pbcopy="xclip -selection c -i"
-    alias pbpaste="xclip -selection clipboard -o"
+  if command_exists xclip; then
+    pbcopy() { xclip -selection c -i $@; }
+    pbpaste() { xclip -selection clipboard -o $@; }
   else
     echo "Couldn't find xclip or pbcopy, "
     exit 127
