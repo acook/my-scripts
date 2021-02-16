@@ -26,13 +26,29 @@ tile() {
   fi
 }
 
-tile 0 16
+if [[ $1 == "-h" ]]; then
+  echo "colortable"
+  echo "Anthony M. Cook"
+  echo
+  echo "usage: $(basename $0) [NUM]"
+  echo
+  echo -e "\tNUM\tnumber of columns at which to wrap the hue block"
+  echo -e "\t\tmultiples of 6 (12, 18, and 36) seem to work well"
+  echo -e "\t\twill also order the colors numerically"
+  echo
+  echo -e "\tby default it will order the colors into blocks of more similar hue"
+  echo -e "\tif your terminal is at least 90 characters wide it will look nice"
+  exit 1
+fi
+
+huewrap=$1
+
+tile 0 15
 echo
 
-# obviously we shouldn't include 16 here but it makes the table lay out a lot better
-if [[ -n $1 ]]; then
+if [[ -n $huewrap ]]; then
   # if you pass in literally any argument the colors will be printed sequentially
-  tile 16 231 18 # 36 or 18 seems to work well
+  tile 16 231 $huewrap
 else
   # TODO: Do this with math instead of by hand
   tile 16  33
