@@ -62,31 +62,33 @@ done
 command_exists() { command -v "$1" > /dev/null 2>&1; }
 
 if command_exists pbcopy; then
-  pbfile()  { pbcopy < "$1"; }
-  pbclear() { pbcopy < /dev/null; }
+  cb-set()   { pbcopy; }
+  cb-get()   { pbpaste; }
+  cb-file()  { pbcopy < "$1"; }
+  cb-clear() { pbcopy < /dev/null; }
 elif command_exists xclip; then # try linux with X
-  pbcopy()  { xclip -selection clipboard -i; }
-  pbpaste() { xclip -selection clipboard -o; }
-  pbfile()  { xclip -selection clipboard -i "$1"; }
-  pbclear() { xclip -selection clipboard -i /dev/null; }
+  cb-set()   { xclip -selection clipboard -i; }
+  cb-get()   { xclip -selection clipboard -o; }
+  cb-file()  { xclip -selection clipboard -i "$1"; }
+  cb-clear() { xclip -selection clipboard -i /dev/null; }
 else
   echo "couldn't find xclip or pbcopy!" >&2
   exit 3
 fi
 
 if [[ "$operation" == "show" ]]; then
-  pbpaste
+  cb-get
 elif [[ "$operation" == "set" ]]; then
   if [[ -n "$content" ]]; then
-    echo "$content" | pbcopy
+    echo "$content" | cb-set
   else
     echo "no content piped in or provided as argument!" >&2
     exit 1
   fi
 elif [[ "$operation" == "clear" ]]; then
-  echo -n "" | pbcopy
+  cb-clear
 elif [[ "$operation" == "file"  ]]; then
-  pbfile "$file"
+  cb-file "$file"
 else
   echo "unknown operation: $operation" >&2
   exit 2
