@@ -1,0 +1,20 @@
+#!/usr/bin/env sh
+
+# Outputs a syntax highlighted list of function signatures from C source file(s)
+# Requires ctags
+# Requires pygmentize for syntax highlighting
+
+command_exists() { command -v "$1" > /dev/null 2>&1; }
+
+if ! command_exists ctags; then
+  echo "ctags not found" >&2
+  exit 2
+fi
+
+if command_exists pygmentize; then
+  colorize="pygmentize -l c"
+else
+  colorize="cat"
+fi
+
+ctags -o - --kinds-C=f --kinds-C++=f -x --_xformat='%{typeref} %{name} %{signature};' "$@" | tr ':' ' ' | sed -e 's/^typename //' | $colorize
