@@ -1,32 +1,30 @@
 #!/bin/bash
 # ColorCat, basic wrapper for rouge and pygmentize for colorized output
 
-if [ ! -t 0 ]; then
+if [[ ! -t 0 ]]; then
   file=/dev/stdin
-elif [ -f $1 ]; then
-  file=$1
+elif [[ -f $1 ]]; then
+  file="$1"
 else
   echo "Usage: $0 code.c" >&2
   echo "or e.g. head code.c | $0" >&2
   exit 1
 fi
 
-function command_exists {
-  type $1 >/dev/null 2>&1
-}
+command_exists() { command -v "$1" > /dev/null 2>&1; }
 
 if command_exists rvm; then
   rvm use gemset tools >/dev/null 2>&1
 fi
 
 if command_exists rougify; then
-  rougify $file
+  rougify "$file"
 elif command_exists pygmentize; then
-  pygmentize -f terminal -g $file
+  pygmentize -f terminal -g "$file"
 else
-  file $file >&2
+  file "$file" >&2
   echo ---- >&2
-  cat $file
+  cat "$file" >&2
   echo ---- >&2
   echo 'WARN : Neither rouge nor pygments installed! "gem install rouge" or "easy_install Pygments"' >&2
 fi
