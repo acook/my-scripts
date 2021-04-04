@@ -1,61 +1,93 @@
 #!/usr/bin/env bash
 # Interact with system clipboards
-logger "$0 : STARTING CLIPBOARD ACCESS"
 
-if ! [ -t 0 ]; then # there's something being piped in
+if [[ ! -t 0 ]]; then # there's something being piped in
   operation="set"
   { content=$(< /dev/stdin); export content=$content; }
-  logger "$0 : FOUND CONTENT -- $content"
 else
   operation="show"
-  logger "$0 : DISPLAYING SYSTEM CLIPBOARD"
 fi
 
-while getopts “wrh” OPTION
+while getopts "w:f:rdh" OPTION
 do
   case $OPTION in
     w) # set
       operation="set"
+      if [ -z "$content" ]; then
+        content="$OPTARG"
+      fi
       ;;
     r) # show
       operation="show"
       ;;
-    h)
-      echo "usage: access the system clipboard"
-      echo "$(basename $0) get"
-      echo "<command with output> | $(basename $0) put"
-      echo "-w    : set (write) clipboard contents to piped in data"
-      echo "-r    : show (read) clipboard conents"
+    f) # file
+      operation="file"
+      file="$OPTARG"
+      ;;
+    d) # clear
+      operation="clear"
+      ;;
+    h) # help
+      echo "usage: access the system primary clipboard"
+      echo
+      echo -e "\t$(basename "$0") [-r|-w value|-d|-f file]"
+      echo -e "\t[command] | $(basename "$0")"
+      echo -e "\t[command] | $(basename "$0") -w default"
+      echo
+      echo -e "\t-r    : show (read) clipboard contents"
+      echo -e "\t-w    : set (write) clipboard contents"
+      echo -e "\t-d    : delete      clipboard contents"
+      echo -e "\t-f    : set file contents to clipboard"
+      echo
+      echo "examples"
+      echo
+      echo "to show clipboard contents:"
+      echo -e "\t$(basename "$0")"
+      echo -e "\t$(basename "$0") -r"
+      echo "to set  clipboard contents:"
+      echo -e "\t$(basename "$0") -w \"something to copy\""
+      echo -e "\tcat ~/.ssh/id_rsa.pub | $(basename "$0")"
+      echo -e "\t$(basename "$0") -f ~/.ssh/id_rsa.pub"
+      echo -e "\techo -n | $(basename "$0") -w \"if pipe is empty use this instead\""
       exit 0
+      ;;
+    *) # invalid option
+      echo "unknown option: $OPTION" >&2
+      echo "'-h' for help" >&2
+      exit 2
       ;;
   esac
 done
 
 command_exists() { command -v "$1" > /dev/null 2>&1; }
 
-if ! command_exists pbcopy; then
-
-  # try linux with X
-  if command_exists xclip; then
-    pbcopy() { xclip -selection c -i $@; }
-    pbpaste() { xclip -selection clipboard -o $@; }
-  else
-    echo "Couldn't find xclip or pbcopy, "
-    exit 127
-  fi
-
+if command_exists pbcopy; then
+  pbfile()  { pbcopy < "$1"; }
+  pbclear() { pbcopy < /dev/null; }
+elif command_exists xclip; then # try linux with X
+  pbcopy()  { xclip -selection clipboard -i; }
+  pbpaste() { xclip -selection clipboard -o; }
+  pbfile()  { xclip -selection clipboard -i "$1"; }
+  pbclear() { xclip -selection clipboard -i /dev/null; }
+else
+  echo "couldn't find xclip or pbcopy!" >&2
+  exit 3
 fi
 
 if [[ "$operation" == "show" ]]; then
   pbpaste
 elif [[ "$operation" == "set" ]]; then
-  if [ -n "$content" ]; then
+  if [[ -n "$content" ]]; then
     echo "$content" | pbcopy
   else
-    echo "no content piped in!"
-    exit 127
+    echo "no content piped in or provided as argument!" >&2
+    exit 1
   fi
+elif [[ "$operation" == "clear" ]]; then
+  echo -n "" | pbcopy
+elif [[ "$operation" == "file"  ]]; then
+  pbfile "$file"
 else
-  echo "sanity check failed!"
-  exit 126
+  echo "unknown operation: $operation" >&2
+  exit 2
 fi
