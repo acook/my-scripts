@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+
+# requires root
+# based on https://ccollins.wordpress.com/2016/01/18/testing-sd-cards-with-linux/
+# generally f3 is the better (and much faster) tool to use: https://fight-flash-fraud.readthedocs.io/en/stable/
+
+# the drive we want to test
+drive=/dev/sdd
+
+echo -e "\e[1;31mWARNING: THIS MAY DESTROY ALL DATA ON $drive!!!\e[0m"
+read -s -p "(press control-c to exit or enter to continue)"
+
+# get reported size of drive
+size="$(blockdev --getsize64 $drive)"
+
+# backup drive contents
+dd if=$drive of=drive.backup bs=1024 count=$size status=progress
+
+# TODO: check result, exit if it fails here
+
+# generate test file
+dd if=/dev/urandom of=rnd_data bs=1024 count=$size
+
+# write to drive (DESTRUCTIVE)
+dd if=rnd_data of=$drive bs=1024 count=$size status=progress
+
+# TODO: derive $size_written from the output of the above
+size_written="$size"
+
+# read from drive
+dd if=$drive of=rnd_read bs=1024 count=$size_written status=progress
+
+echo -ne "\e[34mexpected hash:\e[0m "
+# get hash of our known file, but only the part that was successfully written
+dd if=rnd_data bs=1024 count=$size_written 2>/dev/null | md5sum
+
+echo -ne "\e[33mactual hash:\e[0m "
+# get hash of the file we read back from the drive
+md5sum rnd_read
+
+# TODO: automatically compare the hashes and change the exit code
+
+# attempt to restore backup
+dd if=drive.backup of=$drive bs=1024 count=$size status=progress
+
+# clean up (the drive.backup file is left behind just in case)
+rm rnd_data rnd_read
