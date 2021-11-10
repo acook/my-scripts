@@ -1,19 +1,19 @@
-# ACOOK's Script Repository
+# Script Repository
 
 This a big collection of scripts and simple tools that I've written over the years.
 There are also some useful scripts which I am not the original author of.
 
 It also includes some additional git modules for other tools others or I have written.
 
-Most scripts use `bash` or `ruby` with a couple that use `perl`, or `zsh`.
+Most scripts use `bash` or `ruby` with a couple that use other scripting languages and even 1 rogue binary I keep because I can't figure out where it came from...
 
 # Installation
-
-The installer script will create symlinks to `~/bin` and `~/xbin` then pull down other repos specified in `.gitmodules`.
 
 ```shell
   ./install
 ```
+
+The installer script will create symlinks to `~/bin` and `~/xbin` then pull down other repos specified in `.gitmodules`.
 
 ## Optional
 
@@ -24,26 +24,13 @@ There are additional setup scripts in `./scripts/` for other quick setup options
 ccat
 ----
 
-cat with syntax highlighting
+`cat` with colors!
 
-depends on either:
-
-- pygmentize
-  - python
-
-OR
-
-- rouge
-  - ruby
+depends on either `python`/`Pygments` or `ruby`/`rouge` for the syntax highlighting
 
 run\_tags.rb
 -----------
 
-installs hooks into a git repo that runs ctags when you push, pull, commit, merge, or change branches
+installs hooks into a `git` repo that runs `ctags` when you push, pull, commit, merge, or change branches
 
-depands on:
-
-- ruby
-- ctags
-- git
-
+depends on `ruby` and `ctags` (and of course `git`)
