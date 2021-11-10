@@ -26,6 +26,10 @@ fi
 echo getting list of executables from submodules and creating symlinks...
 $find "$(cd external; pwd)" -maxdepth 3 -type f -perm $mode -exec ln -s -v -f {} "$xbin_dir" \;
 
+echo installing the cht.sh help utility as \`cheat\`...
+curl --progress-bar --verbose -L -o "$xbin_dir/cheat" - https://cht.sh/:cht.sh
+chmod -v +x "$xbin_dir/cht.sh"
+
 echo Creating symlinks to folders...
 ln -s -v "$dir/$bin_dir_name" ~/
 ln -s -v "$dir/$xbin_dir_name" ~/
