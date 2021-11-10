@@ -1,12 +1,19 @@
 #!/bin/env bash
+# now also works in zsh!
 # Just some stuff to make writing prompts easier
 
-thispath=$(dirname "${BASH_SOURCE[0]}")
+isset() { [[ $(eval echo "\${${1}+1}") ]]; }
 
-source $thispath/bashrgb
+if isset BASH_SOURCE; then
+  thispath=$(dirname "${BASH_SOURCE[0]}")
+else # assume zsh
+  thispath=$(dirname ${(%):-%N})
+fi
+
+source "$thispath/bashrgb"
 
 # The ECMA-48 string terminator used by xterm
-# BEL (^G) would also work accoring to the spec
+# BEL (^G) would also work according to the spec
 function string_terminator () { esc "\\"; }
 ST=$(string_terminator)
 
