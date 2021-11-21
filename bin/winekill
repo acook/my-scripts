@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+wineprefix="$1"
+
+# TODO: validate path
+
+wineserver="wineserver"
+
+# TODO: allow or search for server path based on prefix?
+
+WINEPREFIX="$wineprefix" "$wineserver" -k
