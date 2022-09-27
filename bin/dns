@@ -134,7 +134,7 @@ module DNS
         def set_dns name_or_ips
             name = name_or_ips.downcase.to_sym
             new_ipv4 = if name == :dhcp
-                manager.dhcp
+                manager.set_dhcp
             elsif providers.keys.include? name
                 providers[name][:ipv4]
             elsif /\b((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(\.|$)){4}\b/ =~ name_or_ips
@@ -170,7 +170,7 @@ module DNS
                 `networksetup -getdnsservers Wi-Fi`.split ?\n
             end
 
-            def dhcp
+            def set_dhcp
                 `ipconfig getoption #{device} domain_name_server`
             end
 
