@@ -11,7 +11,8 @@ fi
 monitor_port="20000"
 proxy_port="9999"
 network_type="wi-fi"
-ssh_arguments="-D $proxy_port -c blowfish -C -N -v $remote"
+cipher="aes256-gcm@openssh.com"
+ssh_arguments="-D $proxy_port -c $cipher -C -N -v $remote"
 
 if hash autossh 2>/dev/null; then
   ssh_command="autossh -M $monitor_port"
@@ -25,7 +26,7 @@ fi
 
 function enable_proxy {
   echo "enabling system proxy..."
-  networksetup -setsocksfirewallproxy $network_type 127.0.0.1 $proxy_port \
+  sudo networksetup -setsocksfirewallproxy $network_type 127.0.0.1 $proxy_port \
     && echo "enabled!" || echo "failed to enable proxy :("
 }
 function establish_proxy {
@@ -42,7 +43,7 @@ function establish_proxy {
 }
 function disable_proxy {
   echo "disabling system proxy..."
-  networksetup -setsocksfirewallproxystate $network_type off \
+  sudo networksetup -setsocksfirewallproxystate $network_type off \
     && echo "disabled!" || echo "unable to disable proxy :("
 }
 
