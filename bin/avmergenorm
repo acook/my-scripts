@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+
+set -e
+
+THIS="$(basename "$0")"
+AUDIO="$1"
+VIDEO="$2"
+
+EXT=mkv # currently the most flexible container format
+NORM="dynaudnorm" # increases local gain of an audio file without dynamic range loss, see also speechnorm and loudnorm and ffmpeg-normalize
+FILTER="-filter:a $NORM" # separate just to make it easy to move around
+
+function extname {
+  echo "${1##*.}"
+}
+
+function say {
+    echo -e "\e[30;46m -- $THIS: $@\e[0m"
+}
+
+# we do this in 2 steps because FFMPEG gets very confused and the process is extremely slow otherwise
+say Normalizing audio...
+
+AEXT="$(extname "$AUDIO")"
+ATMP=$(mktemp -u "$THIS".XXXXXX --suffix=".$AEXT")
+NORMCMD=(time ffmpeg -i "$AUDIO" $FILTER "$ATMP")
+say Running command: ${NORMCMD[@]}
+"${NORMCMD[@]}"
+
+VEXT="$(extname "$VIDEO")"
+VBASE="$(basename "$VIDEO" "$VEXT")"
+say Replacing old extension \"$VEXT\" with new extension \"$EXT\"
+
+say Merging normalized audio and video files...
+OUTPUT="$VBASE$EXT"
+
+MERGECMD=(time ffmpeg -i "$ATMP" -c:a opus -i "$VIDEO" -c:v copy "$OUTPUT")
+say Running command: ${MERGECMD[@]}
+"${MERGECMD[@]}"
+
+say Cleaning up...
+rm -v "$THIS".*."$AEXT"
+
+say Normalized and merged file is: $OUTPUT
