@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+# 
+# 1. utilizes my yt script to download internet video and audio at their highest quality
+# 2. normalizes and merges the files using my avmergenorm script
+#
+# because:
+# youtube-dl seems to have issues downloading the HQ audio and video together
+# ffmpeg seems to have issues normalizing and merging at the same time
+
+URL="$1"
+
+TITLE="$(youtube-dl -e "$URL")"
+DIR="$(echo "$TITLE" | tr " " "_" | tr -cd "[:alnum:]_")"
+
+# find a quiet place to work
+mkdir -v "$DIR"
+cd "$DIR"
+
+# download audio
+yt "$URL" -x
+
+# download video + subs
+yt "$URL"
+
+# normalize audio and merge audio and video files into one
+VIDEO="$(\ls -1 *.webm | head)"
+AUDIO="$(\ls -1 *.opus | head)"
+avmergenorm "$AUDIO" "$VIDEO"
