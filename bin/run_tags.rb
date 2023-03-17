@@ -163,7 +163,7 @@ class Tags
       me.generate_tags path
     elsif args.first == '-i' then
       me.install
-    elsif args.include? '-h' then 
+    elsif args.include?('-h') || args.include?('--help') then 
       me.usage
     elsif me.am_hook? # git can send a variey of random arguments to hooks, so just roll with whatever gets passed in
       #p args if args && !args.empty? # for the curious
