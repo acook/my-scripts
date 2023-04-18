@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+# if [[ which -a code | wc -l > 1 ]];
+# run="$(which -a code | tail)" # find the other code on the system
+# "$run" # run the other code instead
+# elif [[ command_exists code-oss]];
+code-oss "$@"
+# else
+# echo no VS Code found on this system
+# exit 255
+# fi
