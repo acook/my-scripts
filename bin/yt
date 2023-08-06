@@ -9,6 +9,7 @@ else
   FORMAT="bestvideo"
 fi
 
+BIN="yt-dlp"
 OPTS="--write-description --write-sub --write-auto-sub --embed-subs --add-metadata --no-call-home --console-title"
 
-youtube-dl $FILE --format $FORMAT $OPTS $MORE_OPTS
+$BIN $FILE --format $FORMAT $OPTS $MORE_OPTS
