@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# 
+#
 # 1. utilizes my yt script to download internet video and audio at their highest quality
 # 2. normalizes and merges the files using my avmergenorm script
 #
