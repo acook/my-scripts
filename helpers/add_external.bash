@@ -4,5 +4,6 @@ set -e
 
 URI="$1"
 
-git submodule add "$URI" "$(git root)/external/"
+cd "$(git root)/external/"
+git submodule add "$URI"
 
