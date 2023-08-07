@@ -7,9 +7,12 @@
 # youtube-dl seems to have issues downloading the HQ audio and video together
 # ffmpeg seems to have issues normalizing and merging at the same time
 
-URL="$1"
+PATH="~/xbin:$PATH"
 
-TITLE="$(youtube-dl -e "$URL")"
+URL="$1"
+BIN="yt-dlp"
+
+TITLE="$($BIN -e "$URL")"
 DIR="$(echo "$TITLE" | tr " " "_" | tr -cd "[:alnum:]_")"
 
 # find a quiet place to work
