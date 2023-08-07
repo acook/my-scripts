@@ -10,3 +10,6 @@
 [submodule "external/speedread"]
 	path = external/speedread
 	url = https://github.com/pasky/speedread.git
+[submodule "external/r-mind"]
+	path = external/r-mind
+	url = https://github.com/acook/r-mind.git
