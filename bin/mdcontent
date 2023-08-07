@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+# Uses ripgrep to dump the contents of all markdown files in a directory
+# Combine with wc and other commands to generate stats on a md library
+#
+# ripgrep flag explanation:
+# -v match everything except...
+# -U multiline
+# -I no file names displayed
+# -N no line numbers displayed
+# -t markdown files only
+# don't display lines that are part of quotes, codeblocks, or horizontal rules
+
+rg -v -U -I -N -t markdown '(?s)^```(.)*```|^---|^>' "$@"
+
