@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+value="${1:-""}"
+device="Wacom Intuos Pro M Finger touch"
+field="touch"
+
+source "$(dirname "${BASH_SOURCE[0]}")/wacom-wrapper" "$device" "$field" "$value"

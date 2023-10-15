@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+touch="$(dirname "${BASH_SOURCE[0]}")/wacom-touch"
+wrapper="$(dirname "${BASH_SOURCE[0]}")/wacom-wrapper"
+
+source "$touch" off
+

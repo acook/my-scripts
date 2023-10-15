@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+
+touch="$(dirname "${BASH_SOURCE[0]}")/wacom-touch"
+wrapper="$(dirname "${BASH_SOURCE[0]}")/wacom-wrapper"
+
+# shellcheck source=wacom-wrapper
+source "$touch" "$device" "$field" > /dev/null
+
+case $wacom_previous_value in
+  on)
+    "$wrapper"  "$device" "$field" off
+  ;;
+  off)
+    "$wrapper"  "$device" "$field" on
+  ;;
+  *)
+    echo "unknown error"
+    exit 1
+  ;;
+esac
