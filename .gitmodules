@@ -13,3 +13,6 @@
 [submodule "external/r-mind"]
 	path = external/r-mind
 	url = https://github.com/acook/r-mind.git
+[submodule "external/modern.sh"]
+	path = external/modern.sh
+	url = https://github.com/acook/modern.sh.git
