@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+
+touch="$(dirname "${BASH_SOURCE[0]}")/wacom-touch"
+wrapper="$(dirname "${BASH_SOURCE[0]}")/wacom-wrapper"
+
+source "$wrapper"
+"$touch" off
+
+pad_device="Wacom Intuos Pro M Pad pad"
+set="xsetwacom --set"
+
+"$wrapper" "$pad_device" AbsWheelDown "key bracketleft"
+"$wrapper" "$pad_device" AbsWheelUp   "key bracketright"
+"$wrapper" "$pad_device" Button 1     "key ctrl" # top 1
+"$wrapper" "$pad_device" Button 2     "key alt" # 2
+"$wrapper" "$pad_device" Button 3     "key shift" # 3
+"$wrapper" "$pad_device" Button 8     "key 8" # 4
+
+"$wrapper" "$pad_device" Button 9     "key left" # bottom 1
+"$wrapper" "$pad_device" Button 10    "key down" # 2
+"$wrapper" "$pad_device" Button 11    "key up" # 3
+"$wrapper" "$pad_device" Button 12    "key right" # 4
+
+"$wrapper" "$pad_device" Button 13    "key shift ctrl alt r"
+
+# "key shift ctrl alt r"
+# mouse scroll wheels:
+# button 4
+# button 5

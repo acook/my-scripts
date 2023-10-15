@@ -4,10 +4,12 @@ source "$(dirname "${BASH_SOURCE[0]}")/../external/modern.sh/modern.sh" quiet
 
 wacom_device="${1:-""}"
 wacom_field="${2:-""}"
+wacom_button=""
 wacom_value="${3:-""}"
 
 export wacom_device
 export wacom_field
+export wacom_button
 export wacom_value
 
 # ensure command is available
@@ -18,22 +20,56 @@ fi
 # ensure device is connected
 wacom_all_devices="$(xsetwacom --list devices)"
 export wacom_all_devices
-if \grep '^'"$wacom_device"'$' <<< "$wacom_all_devices"; then
+if ! \grep -q "^$wacom_device.*id" <<< "$wacom_all_devices"; then
   die_status 2 "device \"$wacom_device\" not found"
+elif [[ -z "$wacom_device" ]]; then
+  echo "$wacom_all_devices"
+  (return 0 2>/dev/null) && return 0 || exit 0
 fi
 
+case "$wacom_field" in
+  "Button")
+    wacom_button="${3:-""}"
+    wacom_value="${4:-""}"
+    wacom_field="$wacom_field $wacom_button"
+  ;;
+  *)
+    wacom_button=""
+    wacom_value="${3:-""}"
+  ;;
+esac
+
 # get the value of the field
-xsetwacom --get "$wacom_device" "$wacom_field" > /dev/null || die_status 3 "unknown field: #{$wacom_field}"
-wacom_previous_value="$(xsetwacom --get "$wacom_device" "$wacom_field" || echo "null")"
+if [[ -z $wacom_field || $wacom_field == "" ]]; then
+  xsetwacom --get -s "$wacom_device" all 2>&1 | hilite "does not exist" "$(colorfg red)"
+  exit 0
+else
+  xsetwacom --get "$wacom_device" $wacom_field > /dev/null
+  err=$?
+
+  if [[ $err != 0 ]]; then
+    say "xsetwacom --get \"$wacom_device\" $wacom_field \"$wacom_button\""
+    die_status 3 "unknown field: $wacom_field"
+  fi
+
+  wacom_previous_value="$(xsetwacom --get "$wacom_device" $wacom_field || echo "null")"
+fi
 
 if [[ -z "$wacom_value" ]]; then
   say "value of '$wacom_field' for '$wacom_device' is '$wacom_previous_value'"
 else
   # change the value of the field
-  xsetwacom --set "$wacom_device" "$wacom_field" "$wacom_value"  || echo "unknown error occured!"
-  wacom_current_value="$(xsetwacom --get "$wacom_device" "$wacom_field"  || echo "null")"
+  result="$(xsetwacom --set "$wacom_device" $wacom_field "$wacom_value" 2>&1)"
+  err=$?
+
+  if [[ $err != 0 || ( $err == 0 && $result ) ]]; then
+    result="$(tr "\n" " " <<< "$result")"
+    die_status 5 "got error '$result' for '$wacom_device' when setting '$wacom_field' to '$wacom_value'"
+  fi
+
+  wacom_current_value="$(xsetwacom --get "$wacom_device" $wacom_field || echo "null")"
   export wacom_current_value
-  if [[ $wacom_current_value == $wacom_previous_value ]]; then
+  if [[ $wacom_current_value == "$wacom_previous_value" ]]; then
     say "device '$wacom_device' setting for '$wacom_field' $(colorfg green)unchanged$(colorreset) from '$wacom_previous_value' to '$wacom_current_value'"
   else
     say "device '$wacom_device' setting for '$wacom_field' $(colorfg yellow)changed$(colorreset) from '$wacom_previous_value' to '$wacom_current_value'"
