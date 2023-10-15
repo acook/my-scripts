@@ -7,6 +7,8 @@
 # youtube-dl seems to have issues downloading the HQ audio and video together
 # ffmpeg seems to have issues normalizing and merging at the same time
 
+set -e
+
 PATH="~/xbin:$PATH"
 
 URL="$1"
@@ -20,12 +22,16 @@ mkdir -v "$DIR"
 cd "$DIR"
 
 # download audio
+echo "Downloading HQ audio stream..."
 yt "$URL" -x
 
 # download video + subs
+echo "Downloading video with subtitles..."
 yt "$URL"
 
 # normalize audio and merge audio and video files into one
+echo "Normalizing and merding audio and video files..."
 VIDEO="$(\ls -1 *.webm | head)"
 AUDIO="$(\ls -1 *.opus | head)"
-avmergenorm "$AUDIO" "$VIDEO"
+anorm "$AUDIO"
+avmerge "$AUDIO" "$VIDEO"

@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+
+set -e
+
+THIS="$(basename "$0")"
+AUDIO="$1"
+VIDEO="$2"
+
+EXT=mkv # currently the most flexible container format
+
+function extname {
+  echo "${1##*.}"
+}
+
+function say {
+    echo -e "\e[30;46m -- $THIS: $*\e[0m"
+}
+
+VEXT="$(extname "$VIDEO")"
+VBASE="$(basename "$VIDEO" "$VEXT")"
+say "Replacing old extension \"$VEXT\" with new extension \"$EXT\""
+
+say Merging audio and video files...
+OUTPUT="$VBASE$EXT"
+
+MERGECMD=(time ffmpeg -i "$AUDIO" -c:a opus -i "$VIDEO" -c:v copy "$OUTPUT")
+say "Running command: ${MERGECMD[*]}"
+"${MERGECMD[@]}"
+
+say "Merged file is: $OUTPUT"

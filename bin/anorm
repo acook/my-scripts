@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+
+set -e
+
+THIS="$(basename "$0")"
+FILE="$1"
+
+NORM="dynaudnorm" # increases local gain of an audio file without dynamic range loss, see also speechnorm and loudnorm and ffmpeg-normalize
+FILTER="-filter:a" # separate just to make it easy to move around
+INFIX="norm" # just something to differentiate the output file from the input file
+
+function extname {
+  echo "${1##*.}"
+}
+
+function say {
+    echo -e "\e[30;46m -- $THIS: $*\e[0m"
+}
+
+say Normalizing audio...
+
+AEXT="$(extname "$FILE")"
+ABASE="$(basename "$FILE" "$AEXT")"
+ATMP=$(mktemp -u "$THIS".XXXXXX --suffix=".$AEXT")
+OUTPUT="$ABASE$INFIX.$AEXT"
+NORMCMD=(time ffmpeg -i "$FILE" "$FILTER" "$NORM" "$ATMP")
+say Running command: "${NORMCMD[@]}"
+"${NORMCMD[@]}"
+
+say Relocating normalized file...
+mv -v "$ATMP" "./$OUTPUT"
+
+#say Cleaning up...
+#rm -v "$THIS".*."$AEXT"
+
+say Normalized file is: "$OUTPUT"

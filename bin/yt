@@ -1,15 +1,18 @@
 #!/usr/bin/env bash
 
-FILE="$1"
-
-if [[ "$2" == "-x" ]]; then
-  FORMAT="bestaudio"
-  MORE_OPTS="-x"
-else
-  FORMAT="bestvideo"
-fi
-
-BIN="yt-dlp"
+URL="$1"
+BIN="/opt/pkg/yt-dlp/yt-dlp_linux"
 OPTS="--write-description --write-sub --write-auto-sub --embed-subs --add-metadata --no-call-home --console-title"
 
-$BIN $FILE --format $FORMAT $OPTS $MORE_OPTS
+if [[ "$2" == "-x" ]]; then
+  # audio only preferred
+  FORMAT="ba"
+  MORE_OPTS="--format $FORMAT -x"
+elif [[ "$2" == "-l" ]]; then
+  # good for playlist downloads
+  MORE_OPTS="--ignore-errors --continue --no-overwrites --download-archive progress.txt"
+else
+  MORE_OPTS=""
+fi
+
+$BIN "$URL" $OPTS $MORE_OPTS
