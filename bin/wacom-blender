@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+
+touch="$(dirname "${BASH_SOURCE[0]}")/wacom-touch"
+wrapper="$(dirname "${BASH_SOURCE[0]}")/wacom-wrapper"
+
+source "$wrapper"
+"$touch" off
+
+pad_device="Wacom Intuos Pro M Pad pad"
+set="xsetwacom --set"
+
+"$wrapper" "$pad_device" AbsWheelDown "key bracketright"
+"$wrapper" "$pad_device" AbsWheelUp   "key bracketleft"
+
+"$wrapper" "$pad_device" Button 1     "key ctrl" # top 1, modifier. drag to resize brush tip
+"$wrapper" "$pad_device" Button 2     "key shift" # 2, modifier, color sampler/eyedropper
+"$wrapper" "$pad_device" Button 3     "key ctrl 0" # 3, zoom 100%
+"$wrapper" "$pad_device" Button 8     "key insert" # 4, new layer
+
+"$wrapper" "$pad_device" Button 9     "button 5" # bottom 1, up one layer
+"$wrapper" "$pad_device" Button 10    "button 4" # 2, down one layer
+"$wrapper" "$pad_device" Button 11    "key ctrl z" # 3, undo
+"$wrapper" "$pad_device" Button 12    "key ctrl shift z" # 4. redo
+
+# REQUIRES MAPPING IN Krita: "Reload Original Preset"
+"$wrapper" "$pad_device" Button 13    "key shift ctrl alt r" # resets brush size
