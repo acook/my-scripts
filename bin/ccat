@@ -1,31 +1,58 @@
 #!/bin/bash
 # ColorCat, basic wrapper for rouge and pygmentize for colorized output
 
+THIS="$(basename $0)"
+
+usage() {
+  echo "$THIS - (colorcat) a basic wrapper for colorizing output"
+  echo
+  echo "usage: $THIS [FILE]"
+  echo -e "\t\tFILE\tfile to colorize"
+  echo
+  echo "usage: [PROG] | $THIS"
+  echo -e "\t\tPROG\tprogram output to colorize"
+  echo -e "\t\t\tex: \`head code.c | $THIS\`"
+}
+
 if [[ ! -t 0 ]]; then
   file=/dev/stdin
 elif [[ -f $1 ]]; then
   file="$1"
+elif [[ $1 == "-h" || $1 == "--help" ]]; then
+  usage
+  exit 0
 else
-  echo "Usage: $0 code.c" >&2
-  echo "or e.g. head code.c | $0" >&2
+  usage >&2
   exit 1
 fi
 
 command_exists() { command -v "$1" > /dev/null 2>&1; }
 
 if command_exists rvm; then
+  # I often would keep a gemset for just the shared tools
   rvm use gemset tools >/dev/null 2>&1
 fi
 
-if command_exists rougify; then
-  rougify "$file"
+if false; then
+  echo "if you are seeing this then something has gone terrible wrong"
+
+elif command_exists bat; then
+  # use bat, if available
+  bat --theme="Monokai Extended Origin" "$file"
+
+elif command_exists rougify; then
+  # use Rogue, if available
+  rougify highlight --theme monokai.sublime "$file"
+
 elif command_exists pygmentize; then
-  pygmentize -f terminal -g "$file"
+  # use Pygments, if available
+  pygmentize -O style=monokai -f console256 -g "$file"
+
 else
   file "$file" >&2
   echo ---- >&2
   cat "$file" >&2
   echo ---- >&2
-  echo 'WARN : Neither rouge nor pygments installed! "gem install rouge" or "easy_install Pygments"' >&2
+  echo 'WARN : Bat, Rouge, nor Pygments installed! "inin install bat", "cargo install bat", "gem install rouge", or "easy_install Pygments"' >&2
 fi
 
