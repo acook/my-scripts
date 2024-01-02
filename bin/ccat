@@ -12,12 +12,16 @@ usage() {
   echo "usage: [PROG] | $THIS"
   echo -e "\t\tPROG\tprogram output to colorize"
   echo -e "\t\t\tex: \`head code.c | $THIS\`"
+  echo
+  echo "flags"
+  echo -e "\t\t-l lang"
 }
 
 if [[ ! -t 0 ]]; then
   file=/dev/stdin
 elif [[ -f $1 ]]; then
   file="$1"
+  shift
 elif [[ $1 == "-h" || $1 == "--help" ]]; then
   usage
   exit 0
@@ -38,15 +42,15 @@ if false; then
 
 elif command_exists bat; then
   # use bat, if available
-  bat --theme="Monokai Extended Origin" "$file"
+  bat --theme="Monokai Extended Origin" "$@" "$file"
 
 elif command_exists rougify; then
   # use Rogue, if available
-  rougify highlight --theme monokai.sublime "$file"
+  rougify highlight --theme monokai.sublime "$@" "$file"
 
 elif command_exists pygmentize; then
   # use Pygments, if available
-  pygmentize -O style=monokai -f console256 -g "$file"
+  pygmentize -O style=monokai -f console256 -g "$@" "$file"
 
 else
   file "$file" >&2
