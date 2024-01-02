@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+
+PIPE=/opt/pkg/piper/piper
+MODELS=/opt/pkg/piper/models/
+
+# VOICE=alan/en_GB-alan-medium.onnx
+# CONFIG=alan/en_en_GB_alan_medium_en_GB-alan-medium.onnx.json
+
+VOICE=ljspeech/ljspeech.onnx
+CONFIG=ljspeech/ljspeech.onnx.json
+
+if [[ ! -t 0 ]]; then # there's something being piped in
+  OPERATION="cat /dev/stdin"
+else
+  OPERATION='echo "Sphinx of black quartz, here my vow!"'
+fi
+
+if [[ -n $1 ]]; then
+  OPTS="$*"
+fi
+
+$OPERATION | "$PIPE" -m "$MODELS$VOICE" -c "$MODELS$CONFIG" -f - --output_raw $OPTS | \
+  aplay -r 22050 -f S16_LE -t raw -
