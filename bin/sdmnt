@@ -1,5 +1,0 @@
-#!/usr/bin/env bash
-
-sudo chmod 777 /dev/disk2
-umount /dev/disk2
-umount /dev/disk2s1
