@@ -1,0 +1,19 @@
+#!/usr/bin/env ruby
+
+class Cleaner
+
+  def initialize string
+    @string = string
+  end
+  attr_accessor :string
+
+  def clean
+    string.gsub("\n\n", "QWERTASDFG").
+      gsub("-\n","").gsub("\n", " ").
+      gsub("QWERTASDFG", "\n\n").
+      gsub(/\[.*\]/, "")
+  end
+
+end
+
+puts Cleaner.new($stdin.read).clean
