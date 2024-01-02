@@ -1,20 +1,47 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
+# shellcheck disable=SC2037
 
-# Outputs a syntax highlighted list of function signatures from C source file(s)
-# Requires ctags
-# Requires pygmentize for syntax highlighting
+THIS="$(basename $0)"
 
 command_exists() { command -v "$1" > /dev/null 2>&1; }
 
-if ! command_exists ctags; then
-  echo "ctags not found" >&2
-  exit 2
+usage() {
+  echo "$THIS - outputs a syntax highlighted list of function signatures from c source file(s)"
+  echo
+  echo "usage: $THIS [FILE]"
+  echo -e "\t\tFILE\tfile or files to extract signtures from"
+  echo
+  echo "usage: $THIS"
+  echo -e "\t\tscan current directory"
+}
+
+if [[ $1 == "-h" || $1 == "--help" ]]; then
+  usage
+  exit 0
+elif [[ -n $* ]]; then
+  files=( "$@" )
+else
+  shopt -s nullglob
+  shopt -s globstar
+  files=( **/*.c )
 fi
 
-if command_exists pygmentize; then
-  colorize="pygmentize -l c"
+if command_exists ccat; then
+  colorize="ccat -l c"
 else
   colorize="cat"
 fi
 
-ctags -o - --kinds-C=f --kinds-C++=f -x --_xformat='%{typeref} %{name} %{signature};' "$@" | tr ':' ' ' | sed -e 's/^typename //' | $colorize
+if ! command_exists ctags; then
+  echo "ctags not found" >&2
+  usage >&2
+  exit 2
+elif ctags --version | grep -i -s -q "Universal"; then
+  # https://ctags.io
+  ctags -R -x --kinds-C=f --kinds-C++=f "${files[@]}" | tr -s ' ' | cut -d ' ' -f5- | sort -h | $colorize
+elif ctags --version | grep -i -s -q "Exuberant"; then
+  # https://ctags.sourceforge.net/
+  ctags -x --c-types=f --c++-types=f "${files[@]}" | tr -s ' ' | cut -d ' ' -f6- | sort -h | $colorize
+else
+  ctags | $colorize
+fi
