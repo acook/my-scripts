@@ -1,41 +1,31 @@
 #!/bin/bash
 
-function test_stdnil {
-  for x in {1..1000}; do
-    echo foo | stdnil;
+function test_devnull {
+  for _ in {1..1000}; do
+    echo foo > /dev/null 2>&1;
   done;
 }
 
-function stdnil {
-  exit 0;
-}
-
 function test_file {
-  for x in {1..1000}; do
-    echo bar > ~/.nil;
+  for _ in {1..1000}; do
+    echo bar > ~/.nil 2>&1;
   done;
 }
 
 function test_exit {
-  for x in {1..1000}; do
-    echo baz | exit 0;
+  for _ in {1..1000}; do
+    echo baz | exit 0 2>&1;
   done;
 }
 
 function test_close_out {
-  for x in {1..1000}; do
-    echo baz 1>&- 2>&-;
+  for _ in {1..1000}; do
+    echo qux 1>&- 2>&-;
   done;
 }
 
-function test_close_out {
-  for x in {1..1000}; do
-    echo baz 1>&- 2>&-;
-  done;
-}
-
-echo -ne "\nstdnil"
-time test_stdnil
+echo -ne "\ndevnull"
+time test_devnull
 
 echo -ne "\nfile"
 time test_file
