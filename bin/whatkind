@@ -187,10 +187,18 @@ class WhatKind
       '  '
     end
 
+    TIOCGWINSZ = case RbConfig::CONFIG['host_os']
+    when /darwin|mac os/
+      0x40087468
+    when /linux/
+      0x5413
+    else
+      0x00
+    end
+
     def console_width
-      tiocgwinsz = 0x40087468
       str = [0, 0, 0, 0].pack('SSSS')
-      unless $stdout.ioctl(tiocgwinsz, str) < 0 then
+      unless $stdout.ioctl(TIOCGWINSZ, str) < 0 then
         str.unpack('SSSS')[1]
       else
         Float::INFINITY
