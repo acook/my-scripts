@@ -12,10 +12,6 @@ All scripts use either `bash` or `ruby` unless otherwise indicated.
 
 The installer script will create symlinks to `~/bin` and `~/xbin` then pull down other repos specified in `.gitmodules`.
 
-## Optional
-
-There are additional setup scripts in `./scripts/` for other quick setup options.
-
 ## Included Tools
 
 | Script | Description |
