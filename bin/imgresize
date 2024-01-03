@@ -1,6 +1,0 @@
-#!/bin/bash
-
-[[ -z $1 ]] && echo "usage: $0 image.jpg" && exit 1
-
-cp $1 resized-$1
-gm mogrify -resize 100x100 resized-$1
