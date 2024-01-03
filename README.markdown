@@ -103,7 +103,6 @@ Scripts that are only known to work on MacOS.
 | xeiprompt | Yet another bash prompt |
 | dl | Wrapper for `curl` to download a list of files and retry failures with some additional helpers, possibly obsolete with newer versions of curl having most of these features? |
 | rails_helpers | A pile of aliases and functions to simplify common tasks when doing Rails development (possibly outdated) |
-
 | vbox_update | Automate upgrading VirtualBox (possibly no longer working?) |
 | qube | An old script to set up Kubernetes locally with RabbitMQ |
 | ytav | Downloads audio and video separately then normalizes the audio and combines them into one, uses `yt`, `avnorm` |
