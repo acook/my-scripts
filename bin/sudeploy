@@ -4,7 +4,7 @@
 username="${@: -1}"
 
 # we require a username, not just an option (which begin with a dash)
-if [[ -z $username ]] || [[ $username == -* ]]; then
+if [[ -z $username || $username == -* ]]; then
   echo "usage: $(basename $0) [su options] username"
   # also display su's options in case they come in handy
   su -h
