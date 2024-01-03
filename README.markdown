@@ -1,5 +1,4 @@
 # Script Repository
-# My Scripts
 
 This a big collection of scripts and simple tools that I've written over the years, it also includes submodules to other scripts. First moved into `git` in 2010 but with a prehistory going back to at least 2006.
 
