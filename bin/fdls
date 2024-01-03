@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 # list PIDs with their non-txt-type file descriptors count
-for pid in `ps aux | tail -n +2 | awk '{print $2}'`; do
-  FCOUNT=`lsof -p $pid | grep -v " txt " | wc -l`; echo "PID: $pid $FCOUNT";
+for pid in $(ps aux | tail -n +2 | awk '{print $2}'); do
+  echo -n "PID: $pid "
+  lsof -p $pid | grep -v -c " txt "
 done | sort -nk3
