@@ -28,7 +28,7 @@ module Shimmer
   end
 
   # Display some text with the chosen foreground and background colors and then clean up after ourselves.
-  def colorize(fore, back, text) 
+  def colorize(fore, back, text)
     fg(fore) + bg(back) + text + reset_color
   end
 
@@ -37,7 +37,7 @@ module Shimmer
     # This is still using the "extended" method for generating color codes, so it may not be compatible with all terminals.
     (1..16).each do |basic_color|
       printf colorize(17 - basic_color, basic_color, ' # ')
-      puts if basic_color != 0 && basic_color % 4 == 0 
+      puts if basic_color != 0 && basic_color % 4 == 0
     end
     puts reset_color
   end
@@ -47,23 +47,27 @@ module Shimmer
 
     orangy_greens = Array.new
     (17..231).each_with_index do |extended_color, index|
-      orangy_greens << extended_color if index % 36 == 0 
-      puts if index % 36 == 0 
+      orangy_greens << extended_color if index % 36 == 0
+      puts if index % 36 == 0
       printf colorize(extended_color, 0, ' ' + extended_color.to_padded_s)
     end
     puts reset_color
+    puts
+    (232..255).each_with_index do |extended_color, index|
+      orangy_greens << extended_color if index % 36 == 0
+      puts if index % 36 == 0
+      printf colorize(extended_color, 0, ' ' + extended_color.to_padded_s)
+    end
   end
 
 end
 
 class Integer
   # Seems there should be something that does this, so there probably is.
-  # However, I'm offline and it was faster to write myself then dig through offline docs.
-  # If I knew regex I'd probably be able to use that as well.
   # I like recursive functions anyway!
   def to_padded_s(leng = 3, stringified = nil)
     stringified ||= self.to_s
-    stringified.length == leng ? stringified : to_padded_s(leng, '0' + stringified)
+    stringified.length >= leng ? stringified : to_padded_s(leng, '0' + stringified)
   end
 end
 
@@ -71,4 +75,5 @@ end
 
 include Shimmer
 
+basic_color_chart
 extended_color_chart
