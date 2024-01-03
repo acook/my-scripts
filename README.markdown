@@ -51,8 +51,7 @@ There are additional setup scripts in `./scripts/` for other quick setup options
 | hex_to_ansi.rb | Convert hex RGB to ANSI codes |
 | run_tags.rb | A script to run ctags on all `.rb` files in a project, can install git hooks to do the same |
 
-
-# MacOS Scripts
+### MacOS Scripts
 
 Scripts that are only known to work on MacOS.
 
@@ -66,7 +65,9 @@ Scripts that are only known to work on MacOS.
 | safe-reattach-to-user-namespace | Runs `reattach-to-user-namespace` if available, and just runs the provided command directly if not, only useful on particular combinations of MacOS and `tmux`/`screen` due to some weird quirk of the OS |
 | sockmonkey | Set up a SOCKS tunnel over SSH for browsers to proxy through, only works on MacOS |
 
-# Weirdly Specific
+### Weirdly Specific
+
+These might be specific to my setup or rarely useful to others.
 
 | Script | Description |
 | ---- | ---- |
@@ -80,14 +81,16 @@ Scripts that are only known to work on MacOS.
 | prompt_helpers | A sort of reference table of bash functions often interesting to writing shell prompts |
 | mdcontent | Display content of all markdown files in a directory, ignoring frontmatter, intended to be used for compiling stats |
 | resync | Rsync wrapper with retries, uses environment variables for configuration |
-| uninstall_all_gems | Uninstall all Ruby gems in the current environment, as a backup for if `gem uninstall -aIx` on its own isn't working |
 | anorm | Normalize the volume of an audio file |
 | avmerge | Combine an audio file into a video file |
 | avmergenorm | Normalize an audio file and combine it with a video file, uses `anorm` and `avmerge` |
 | csig | Display a sorted list of the C/C++ function signatures for a given list or directory of files |
+| uninstall_all_gems | Uninstall all Ruby gems in the current environment, as a backup for if `gem uninstall -aIx` on its own isn't working |
 | gg | A manager for `Go`'s `GOPATH` environment variable which can easily isolate multiple `Go` source trees, similar to a virtual environment in Python or a gemset in Ruby, also works as a library to be included in other bash scripts |
 
-# WIP/Outdated Scripts
+### WIP/Outdated Scripts
+
+These may be broken or are otherwise only still here as a reminder to myself.
 
 | Script | Description |
 | ---- | ---- |
