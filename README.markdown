@@ -28,7 +28,7 @@ The installer script will create symlinks to `~/bin` and `~/xbin` then pull down
 | git-dates | Git subcommand to display the dates of the most recent commits for each branch in a repo |
 | mass_rm | Delete all files from a list in specified file which match a grep pattern |
 | newest | Finds the newest binary in a path and runs it, handy when generating a lot of builds in one folder |
-| orphanage | Lists all untracked files from a directory, useful for running in a directory to see if it contains non-git subfolders or git repos with files that have yet to be committed |
+| orphanage | Lists all untracked files from a directory, useful for running in a directory to see if it contains non-git subfolders or git repos with files that have yet to be committed (uses `ripgrep`) |
 | recite | Using Piper TTS it will read input text out to your default audio device |
 | remove_trailing_whitespace | Removes the trailing whitespace from files |
 | retry | Rerun any command until it succeeds |
