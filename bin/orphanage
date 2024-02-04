@@ -1,0 +1,90 @@
+#!/usr/bin/env ruby
+
+require "pathname"
+require "set"
+require "open3"
+
+class Orphanage
+  def initialize search_path
+    @root = search_path
+    @files = Set.new
+  end
+  attr_accessor :root, :files
+
+  GIT_ROOT_COMMAND = "git rev-parse --show-toplevel"
+  GIT_UNTRACKED    = "git status --untracked-files --porcelain | rg '^\\?\\? (.*)' -or '$1'"
+  IGNORED_FILES    = %w(.git .hg)
+
+  def git_root dir
+    Open3.popen3(GIT_ROOT_COMMAND, {chdir: dir}) do |stdin, stdout, stderr, info|
+      stdin.close
+      stderr.close
+      status = info.value
+      if status == 0 then
+        return Pathname.new stdout.read.chomp
+      end
+      return nil
+    end
+  end
+
+  def in_git_repo? dir
+    Open3.popen3(GIT_ROOT_COMMAND, {chdir: dir}) do |stdin, stdout, stderr, info|
+      stdin.close
+      stderr.close
+      status = info.value
+      if status == 0 then
+        return true
+      end
+    end
+    return false
+  end
+
+  def git_untracked_files dir
+    Open3.popen3(GIT_UNTRACKED, {chdir: dir}) do |stdin, stdout, stderr, info|
+      stdin.close
+      stderr.close
+      status = info.value
+      if status == 0 then
+        return stdout.read.split(?\n)
+      end
+      return nil
+    end
+  end
+
+  def search
+    handle_child root
+    puts @files.sort.join ?\n
+  end
+
+  def handle_child child
+    return if !child.exist? || IGNORED_FILES.include?(child.basename)
+
+    if child.directory? then
+      if in_git_repo? child then
+        (git_untracked_files(child) || []).each do |file|
+          handle_file git_root(child).join file
+        end
+      else
+        search_dir child
+      end
+    elsif child.file? then
+      handle_file child.realpath
+    end
+  end
+
+  def search_dir dir
+    dir.each_child do |child|
+      handle_child child
+    end
+  end
+
+  def handle_file file
+    @files << file
+  end
+end
+
+search_path = Pathname.new ARGV.first || "."
+
+if search_path.exist? then
+  Orphanage.new(search_path).search
+end
