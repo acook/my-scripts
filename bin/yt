@@ -8,11 +8,13 @@ if [[ "$2" == "-x" ]]; then
   # audio only preferred
   FORMAT="ba"
   MORE_OPTS="--format $FORMAT -x"
+  shift
 elif [[ "$2" == "-l" ]]; then
   # good for playlist downloads
   MORE_OPTS="--ignore-errors --continue --no-overwrites --download-archive progress.txt"
+  shift
 else
-  MORE_OPTS=""
+  MORE_OPTS="$*"
 fi
 
 $BIN "$URL" $OPTS $MORE_OPTS
