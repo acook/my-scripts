@@ -5,15 +5,26 @@ require "set"
 require "open3"
 
 class Orphanage
-  def initialize search_path
-    @root = search_path
-    @files = Set.new
+  def initialize search_path, list_files_last: true, relative_paths: true, sep: ?\n
+    @files           = Set.new
+    @root            = search_path
+    @list_files_last = list_files_last
+    @relative_paths  = true
+    @sep             = sep
   end
-  attr_accessor :root, :files
+  attr_accessor :root, :files, :sep
 
   GIT_ROOT_COMMAND = "git rev-parse --show-toplevel"
   GIT_UNTRACKED    = "git status --untracked-files --porcelain | rg '^\\?\\? (.*)' -or '$1'"
   IGNORED_FILES    = %w(.git .hg)
+
+  def list_files_last?
+    @list_files_last
+  end
+
+  def relative_paths?
+    @relative_paths
+  end
 
   def git_root dir
     Open3.popen3(GIT_ROOT_COMMAND, {chdir: dir}) do |stdin, stdout, stderr, info|
@@ -52,8 +63,38 @@ class Orphanage
   end
 
   def search
-    handle_child root
-    puts @files.sort.join ?\n
+    handle_child Pathname.new root
+    puts arrange
+  end
+
+  def arrange
+    sort(display(@files)).join sep
+  end
+
+  def display list
+    if relative_paths? then
+      list.map do |f|
+        f.relative_path_from(Dir.pwd).to_path
+      end
+    else
+      list
+    end
+  end
+
+  def sort list
+    if list_files_last? then
+      list.sort do |a,b|
+        if (a.to_s.include?(?/) && b.to_s.include?(?/)) || (!a.to_s.include?(?/) && !b.to_s.include?(?/))
+          a <=> b
+        elsif a.to_s.include? ?/
+          -1
+        else
+          1
+        end
+      end
+    else
+      list.sort
+    end
   end
 
   def handle_child child
@@ -83,8 +124,4 @@ class Orphanage
   end
 end
 
-search_path = Pathname.new ARGV.first || "."
-
-if search_path.exist? then
-  Orphanage.new(search_path).search
-end
+Orphanage.new(ARGV.first || ".").search
