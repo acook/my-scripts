@@ -4,7 +4,7 @@ PIPE=/opt/pkg/piper/piper
 MODELS=/opt/pkg/piper/models/
 
 # VOICE=alan/en_GB-alan-medium.onnx
-# CONFIG=alan/en_en_GB_alan_medium_en_GB-alan-medium.onnx.json
+# CONFIG=alan/en_GB-alan-medium.onnx.json
 
 VOICE=ljspeech/ljspeech.onnx
 CONFIG=ljspeech/ljspeech.onnx.json
