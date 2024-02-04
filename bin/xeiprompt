@@ -1,4 +1,4 @@
-#!/usr/bin/env $SHELL
+#!/usr/bin/env bash
 
 LAST_COMMAND_EXIT_STATUS=$?
 
