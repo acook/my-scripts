@@ -1,48 +1,95 @@
 #!/bin/bash
 
-default_shell="bash"
+command_exists() { command -v "$1" > /dev/null 2>&1; }
 
-# use brewed utils if available
-# TODO: detect tmux and the default_shell and provide error msgs if not found
-if [[ -x /usr/local/bin/brew ]]; then
-  # TODO: find homebrew/linuxbrew and ask for its prefix
-  #prefix="$(brew --prefix)/bin"
-  prefix="/usr/local/bin"
-  tmux_prefix="$prefix"
-  shell_prefix="$prefix"
+# just making sure this is set, many apps use it, and this script does too
+export XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
+
+# look for homebrew
+if command_exists brew; then
+  brew="brew"
+elif [[ -x /usr/local/bin/brew ]]; then
+  brew="/usr/local/bin/brew"
+elif [[ -x /home/linuxbrew/.linuxbrew/bin/brew ]]; then
+  prefix="//home/linuxbrew/.linuxbrew/bin/brew"
 else
-  tmux_prefix="/usr/bin"
-  shell_prefix="/bin"
+  echo -e "\e[31mwarning: homebrew not found!\e[0m"
+  brew=""
 fi
 
-tmux="$tmux_prefix/tmux"
+# use brewed utils if available
+if [[ -n $brew ]]; then
+  prefix=$($brew --prefix)
+  export HOMEBREW_PREFIX="${HOMEBREW_PREFIX:-$prefix}"
+
+  if [[ $PATH != *"$HOMEBREW_PREFIX/bin"* ]]; then
+    PATH=$HOMEBREW_PREFIX/sbin:$HOMEBREW_PREFIX/bin:$HOMEBREW_PREFIX/libexec/gnubin:$PATH:$HOMEBREW_PREFIX/opt/llvm/bin
+  fi
+fi
+
+# detect tmux
+if command_exists tmux; then
+  tmux=tmux
+else
+  echo -e "\e[31merror: tmux not found!\e[0m"
+  tmux=""
+fi
+
+# use fish
+if command_exists fish; then
+  default_shell="fish"
+elif command_exists "$SHELL"; then
+  default_shell="$SHELL"
+elif command_exists bash; then
+  # if this script is running then we can reasonably assume bash is available, right?
+  default_shell="bash"
+else
+  # something has probably gone terribly wrong
+  echo -e "\e[31mwarning: standard shell not found! your os/config might be broken!\e[0m"
+  default_shell="sh"
+fi
 
 # whether or not to enable tmux-iTerm integration
 if [[ $TERM_PROGRAM == "iTerm.app" ]]; then
-  opts="-CC" # enable integration with iTerm
+  opts="-CC"         # enable integration with iTerm
   config="/dev/null" # iTerm-tmux integration doesn't play well with configs
 else
-  opts="" # nothing fancy
-  config="$HOME/.tmux.conf" # we assume this exists
+  opts=""            # no additional options
+
+  # find tmux config
+  if [[ -f $XDG_CONFIG_HOME/tmux/tmux.conf ]]; then
+    config="$XDG_CONFIG_HOME/tmux/tmux.conf"
+  elif [[ -f $HOME/.tmux.conf ]]; then
+    config="$HOME/.tmux.conf"
+  fi
 fi
 
 # args or no args passed in?
 if [[ $# -gt 0 ]]; then
+  # assumes the format:
+  #     tmux_resume /path/my_program --program-opts
+  # this results in a tmux session called 'my_program'
   # run the provided command in a tmux window
   name=$(basename "$1")
-  cmd=$*
+  cmd="$*"
 else
   # no args provided, so attach to existing session if available
   # otherwise create a new session with bash
   name="main"
-  cmd="$shell_prefix/$default_shell"
+  cmd="$default_shell"
 fi
 
-# detect if there's already a session with that name
-if $tmux has-session -t "$name"; then
-  # connect to the existing session
+# still run a shell if no tmux, in case this is used as a login shell or other critial util
+if [[ -z $tmux ]]; then
+  echo " !! emergency dropping you into '$default_shell' !! "
+  "$default_shell"
+  status="$?"
+  echo " !! '$default_shell' exited !! "
+  exit "$status"
+elif $tmux has-session -t "$name"; then
+  # connect to existing session, if exists
   $tmux attach -t "$name" -d
 else
   # create a new session
-  $tmux -f "$config" $opts new -s "$name" -c "$cmd"
+  $tmux -f "$config" $opts new -s "$name" "$cmd"
 fi
