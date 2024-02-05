@@ -37,17 +37,18 @@ fi
 
 # use fish
 if command_exists fish; then
-  default_shell="fish"
+  default_shell="$(which fish)"
 elif command_exists "$SHELL"; then
   default_shell="$SHELL"
 elif command_exists bash; then
   # if this script is running then we can reasonably assume bash is available, right?
-  default_shell="bash"
+  default_shell="$(which bash)"
 else
   # something has probably gone terribly wrong
   echo -e "\e[31mwarning: standard shell not found! your os/config might be broken!\e[0m"
   default_shell="sh"
 fi
+export default_shell
 
 # whether or not to enable tmux-iTerm integration
 if [[ $TERM_PROGRAM == "iTerm.app" ]]; then
@@ -66,18 +67,19 @@ fi
 
 # args or no args passed in?
 if [[ $# -gt 0 ]]; then
+  # FIXME: make this work without breaking everything else
   # assumes the format:
   #     tmux_resume /path/my_program --program-opts
   # this results in a tmux session called 'my_program'
   # run the provided command in a tmux window
   name=$(basename "$1")
-  cmd="$*"
+  #cmd="$*"
 else
   # no args provided, so attach to existing session if available
   # otherwise create a new session with bash
   name="main"
-  cmd="$default_shell"
 fi
+cmd="$default_shell"
 
 # still run a shell if no tmux, in case this is used as a login shell or other critial util
 if [[ -z $tmux ]]; then
@@ -86,10 +88,15 @@ if [[ -z $tmux ]]; then
   status="$?"
   echo " !! '$default_shell' exited !! "
   exit "$status"
-elif $tmux has-session -t "$name"; then
+elif $tmux has-session -t "$name" 2<&-; then
   # connect to existing session, if exists
   $tmux attach -t "$name" -d
 else
-  # create a new session
-  $tmux -f "$config" $opts new -s "$name" "$cmd"
+  # create a new session in the background so we can send it environment info
+  $tmux -f "$config" $opts new -d -s "$name" \
+    -e default_shell="$default_shell" \
+    -e PATH="$PATH" \
+    -e HOMEBREW_PREFIX="$HOMEBREW_PREFIX" "$cmd"
+  $tmux set-option -t "$name" default-shell "$default_shell"
+  $tmux attach -t "$name" -d
 fi
