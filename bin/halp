@@ -23,9 +23,7 @@ if [[ ! -t 0 ]]; then # there's something being piped in
   incmd=(cat /dev/stdin)
 elif help "$1" 1>&- 2>&-; then
   incmd=(help "$1")
-elif info "$1" 1> /dev/null 2> /dev/null; then
-  # info can't cope with its output being closed, so we redirect to null
-  #incmd=(info "$1" --usage)
+elif command_exists info && [[ $(info "$1" 2>&1) != *"No menu item"* ]]; then
   # i can't currently find a good way to hilite info pages, so fall back to the original command for now
   exec info "$1" --usage --vi-keys
 elif man "$1" 1>&- 2>&-; then
