@@ -22,6 +22,9 @@ if [[ ! -t 0 ]]; then
 elif [[ -f $1 ]]; then
   file="$1"
   shift
+elif [[ -d $1 ]]; then
+  ls --color=always "$1" | "$0"
+  exit 0
 elif [[ $1 == "-h" || $1 == "--help" ]]; then
   usage
   exit 0
