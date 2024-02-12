@@ -13,6 +13,8 @@ usage() {
   echo -e "\t\t-h"
   echo -e "\t\t--help\tshow usage (this)"
   echo -e "\t\t--hidden\tsearch hidden files and directories"
+  echo -e "\t\t-p"
+  echo -e "\t\t--print\tprint path to program and exit (don't run)"
   echo -e "\t\t-r"
   echo -e "\t\t--recursive\tsearch recusively"
   echo -e "\t\t-verbose"
@@ -40,6 +42,10 @@ while [[ $# -gt 0 ]]; do
     ;;
     --hidden) # search hidden files
       hidden=true
+      shift
+    ;;
+    -p|--print)
+      printonly=true
       shift
     ;;
     --) # stop processing options, useful if the directory begins with a dash
@@ -92,6 +98,11 @@ if [[ $findstatus -ne 0 ]]; then
 fi
 
 if [[ -n $exe ]]; then
+  if [[ $printonly == true ]]; then
+    echo "$exe"
+    exit 0
+  fi
+
   if [[ $verbose == "true" ]]; then
     echo "executing '$exe ${args[*]}'"
   fi
