@@ -80,8 +80,16 @@ else
 fi
 
 exe="$(
-  TZ=UTC0 find "$dir" "${maxdepth[@]}" -type f -executable -printf '%TFT%TTZ %p\0' "${filter[@]}" | sort -rz | head -zn1 | cut -s -f 2- -d ' ' | tr '\0' '\n'
+  (TZ=UTC0 find "$dir" "${maxdepth[@]}" -type f -executable -printf '%TFT%TTZ %p\0' "${filter[@]}") | sort -rz | head -zn1 | cut -s -f 2- -d ' ' | tr '\0' '\n' ; exit "${PIPESTATUS[0]}"
 )"
+findstatus="$?"
+
+if [[ $findstatus -ne 0 ]]; then
+  if [[ $verbose == "true" ]]; then
+    echo "find exit code: $findstatus"
+  fi
+  exit "$findstatus"
+fi
 
 if [[ -n $exe ]]; then
   if [[ $verbose == "true" ]]; then
