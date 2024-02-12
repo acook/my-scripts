@@ -17,7 +17,7 @@ usage() {
   echo -e "\t\t--print\tprint path to program and exit (don't run)"
   echo -e "\t\t-r"
   echo -e "\t\t--recursive\tsearch recusively"
-  echo -e "\t\t-verbose"
+  echo -e "\t\t--verbose"
   echo
   echo "returns non-zero if nothing found or program exit code otherwise"
   echo
