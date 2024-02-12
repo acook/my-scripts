@@ -1,5 +1,98 @@
 #!/usr/bin/env bash
+#
 
-dir="${1:-.}"
+THIS="$(basename "$0")"
 
-$dir/$(\ls -Art $dir | tail -n 1) "${@:2}"
+usage() {
+  echo "newest - find and run latest program (useful for build directories)"
+  echo
+  echo "usage: $THIS [options] [path] [args]"
+  echo -e "\t\tpath\tpath of directory to search (required if sending args)"
+  echo -e "\t\targs\targuments to send to program"
+  echo -e "\t\t--\tstop processing options"
+  echo -e "\t\t-h"
+  echo -e "\t\t--help\tshow usage (this)"
+  echo -e "\t\t--hidden\tsearch hidden files and directories"
+  echo -e "\t\t-r"
+  echo -e "\t\t--recursive\tsearch recusively"
+  echo -e "\t\t-verbose"
+  echo
+  echo "examples"
+  echo -e "\t\t$THIS . -v"
+  echo -e "\t\t$THIS -r -- -build-artifacts- --version"
+}
+
+maxdepth=(-maxdepth 1)
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    -h|--help)
+      usage
+      exit 0
+    ;;
+    -r|--recursive)
+      maxdepth=()
+      shift
+    ;;
+    --verbose)
+      verbose=true
+      shift
+    ;;
+    --hidden) # search hidden files
+      hidden=true
+      shift
+    ;;
+    --) # stop processing options, useful if the directory begins with a dash
+      shift
+      break
+    ;;
+    -*) # catch any other options
+      echo "unrecognized option: $1"
+      usage
+      exit 1
+    ;;
+    *) # first non-option will be the directory
+      break
+    ;;
+  esac
+done
+
+if [[ -n $1 ]]; then
+  dir="$1"
+  args=("${@:2}")
+else
+  dir="."
+  args=("${@:1}")
+fi
+
+if [[ $verbose == "true" ]]; then
+  echo -n "searching '$dir'"
+  if [[ ${maxdepth[1]} -ne 1 ]]; then
+    echo -n " (recursively)"
+  fi
+  echo
+fi
+
+if [[ $hidden == true ]]; then
+  filter=()
+else
+  filter=(-not -path '*/.*')
+fi
+
+exe="$(
+  TZ=UTC0 find "$dir" "${maxdepth[@]}" -type f -executable -printf '%TFT%TTZ %p\0' "${filter[@]}" | sort -rz | head -zn1 | cut -s -f 2- -d ' ' | tr '\0' '\n'
+)"
+
+if [[ -n $exe ]]; then
+  if [[ $verbose == "true" ]]; then
+    echo "executing '$exe ${args[*]}'"
+  fi
+
+  "$exe" "${args[@]}"
+else
+  if [[ $verbose == "true" ]]; then
+    echo "no executable files found in '$dir'"
+  fi
+
+  exit 2
+fi
