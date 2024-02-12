@@ -26,6 +26,7 @@ The installer script will create symlinks to `~/bin` and `~/xbin` then pull down
 | git-author | Git subcommand to rewrite the author name and info on past commits, used to fix incorrect email addresses |
 | git-children-of | Git subcommand to display the children of a given commit |
 | git-dates | Git subcommand to display the dates of the most recent commits for each branch in a repo |
+| halp | searches many different sources for command help and pages them with `ccat` |
 | mass_rm | Delete all files from a list in specified file which match a grep pattern |
 | newest | Finds the newest binary in a path and runs it, handy when generating a lot of builds in one folder |
 | orphanage | Lists all untracked files from a directory, useful for running in a directory to see if it contains non-git subfolders or git repos with files that have yet to be committed (uses `ripgrep`) |

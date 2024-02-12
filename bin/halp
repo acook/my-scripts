@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+
+# wrap program help output
+# search various sources of assistance
+
+command_exists() { command -v "$1" 1>&- 2>&-; }
+
+if command_exists bat; then
+  has_bat=true
+fi
+
+if command_exists ccat; then
+  view=ccat
+elif [[ $has_bat == "true" ]]; then
+  view=bat
+fi
+
+if [[ $has_bat == "true" ]]; then
+  opts=(--language=help --style=plain)
+fi
+
+if [[ ! -t 0 ]]; then # there's something being piped in
+  incmd=(cat /dev/stdin)
+elif help "$1" 1>&- 2>&-; then
+  incmd=(help "$1")
+elif info "$1" 1> /dev/null 2> /dev/null; then
+  # info can't cope with its output being closed, so we redirect to null
+  #incmd=(info "$1" --usage)
+  # i can't currently find a good way to hilite info pages, so fall back to the original command for now
+  exec info "$1" --usage --vi-keys
+elif man "$1" 1>&- 2>&-; then
+  incmd=(man "$1")
+
+  if [[ $has_bat == "true" ]]; then
+    opts=(--language=man --style=plain)
+  fi
+elif command_exists "$1"; then
+  incmd=("$1" --help)
+elif man -k "$1" 1>&- 2>&-; then
+  incmd=(man -k "$1")
+fi
+
+# consider detecting and incorporating local-only versions of cheat sheets
+
+"${incmd[@]}" | "$view" "${opts[@]}"
