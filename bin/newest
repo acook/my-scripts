@@ -19,6 +19,8 @@ usage() {
   echo -e "\t\t--recursive\tsearch recusively"
   echo -e "\t\t-verbose"
   echo
+  echo "returns non-zero if nothing found or program exit code otherwise"
+  echo
   echo "examples"
   echo -e "\t\t$THIS . -v"
   echo -e "\t\t$THIS -r -- -build-artifacts- --version"
@@ -108,6 +110,7 @@ if [[ -n $exe ]]; then
   fi
 
   "$exe" "${args[@]}"
+  exit $?
 else
   if [[ $verbose == "true" ]]; then
     echo "no executable files found in '$dir'"
