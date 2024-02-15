@@ -45,6 +45,9 @@ if false; then
 
 elif command_exists bat; then
   # use bat, if available
+  if [[ $file == /dev/stdin ]]; then
+    opts=(--style=plain)
+  fi
   bat --theme="Monokai Extended Origin" "$@" "$file"
 
 elif command_exists rougify; then
