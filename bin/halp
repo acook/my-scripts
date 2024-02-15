@@ -19,10 +19,24 @@ if [[ $has_bat == "true" ]]; then
   opts=(--language=help --style=plain)
 fi
 
+current_shell="$(basename "$(realpath "/proc/$PPID/exe")")"
+if [[ $current_shell != *sh* ]]; then
+  current_shell="$SHELL"
+fi
+
 if [[ ! -t 0 ]]; then # there's something being piped in
   incmd=(cat /dev/stdin)
-elif help "$1" 1>&- 2>&-; then
-  incmd=(help "$1")
+elif "$current_shell" -c "help '$1'" 1>&- 2>&-; then
+  if [[ $current_shell == *fish* ]]; then
+    # fish launches a browser and there's no point opening two of them
+    echo "check browser documentation"
+    # TODO: check for commandline browsers and use them
+    #     - in a function: check for fish
+    #     - check for commandline browsers
+    #     - run the command check as above but with BROWSER set to one of our choice
+    exit 0
+  fi
+  incmd=("$current_shell" -c "help '$1'")
 elif command_exists info && [[ $(info "$1" 2>&1) != *"No menu item"* ]]; then
   # i can't currently find a good way to hilite info pages, so fall back to the original command for now
   exec info "$1" --usage --vi-keys
