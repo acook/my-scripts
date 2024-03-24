@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+idir="$1"
+odir="$2"
+
+for ifile in $idir/*.flac; do
+  echo -e "\e[34;1m-- converting: $ifile\e[0;35m"
+  ffmpeg -i "$ifile" -ab 320k -map_metadata 0 -id3v2_version 3 "$odir/${ifile%.flac}.mp3"
+done
+
+echo -e "\e[0m"
