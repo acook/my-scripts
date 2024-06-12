@@ -1,0 +1,20 @@
+#!/bin/bash
+# LICENSE: CC BY-SA 4.0
+# ORIGINAL AUTHOR: Bruno Bronosky - http://blog.bruno.ws/
+# ORIGINAL URL: https://stackoverflow.com/a/54587968/1255156
+
+fileA="$1"
+shift
+for fileB in "$@"; do
+    (
+        # diff once grep twice with the help of tee and stderr
+        diff $fileA $fileB | \
+            tee >(grep -cE '^< ' >&2) | \
+                  grep -cE '^> ' >&2
+    # recapture stderr
+    ) 2>&1 | (
+        read -d '' diffA diffB;
+        printf "The files %s and %s have %s:%s diffs out of %s:%s lines.\n" \
+            $fileA $fileB $diffA $diffB $(wc -l < $fileA) $(wc -l < $fileB)
+    )
+done | column -t
