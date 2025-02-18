@@ -12,14 +12,14 @@ set="xsetwacom --set"
 "$wrapper" "$pad_device" AbsWheelDown "key bracketright"
 "$wrapper" "$pad_device" AbsWheelUp   "key bracketleft"
 
-"$wrapper" "$pad_device" Button 1     "key ctrl" # top 1
-"$wrapper" "$pad_device" Button 2     "key shift" # 2
-"$wrapper" "$pad_device" Button 3     "key ctrl 0" # 3
-"$wrapper" "$pad_device" Button 8     "key insert" # 4
+"$wrapper" "$pad_device" Button 1     "key ctrl"         # top 1
+"$wrapper" "$pad_device" Button 2     "key shift"        # 2
+"$wrapper" "$pad_device" Button 3     "key ctrl 0"       # 3
+"$wrapper" "$pad_device" Button 8     "key insert"       # 4
 
-"$wrapper" "$pad_device" Button 9     "key pgup" # bottom 1
-"$wrapper" "$pad_device" Button 10    "key pgdn" # 2
-"$wrapper" "$pad_device" Button 11    "key ctrl z" # 3
+"$wrapper" "$pad_device" Button 9     "key pgup"         # bottom 1
+"$wrapper" "$pad_device" Button 10    "key pgdn"         # 2
+"$wrapper" "$pad_device" Button 11    "key ctrl z"       # 3
 "$wrapper" "$pad_device" Button 12    "key ctrl shift z" # 4
 
 # REQUIRES MAPPING IN Krita: "Reload Original Preset"
