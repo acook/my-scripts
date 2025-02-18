@@ -88,7 +88,6 @@ class MRU
   end
 
   def krita
-    count[:krita] = 0
     kritafile.open.readlines.each do |line|
       m = line.match /^Name\d*=(.*)/
       if m then
