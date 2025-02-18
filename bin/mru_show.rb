@@ -64,15 +64,15 @@ class MRU
   def gtk
     lines = gtkfile.readlines
 
-    @gtk = 0
+    count[:gtk] = 0
     lines.each do |line|
       m = line.match(/file:\/\/(.*?)"/)
       if m then
-        if @gtk == 0 then
+        if count[:gtk] == 0 then
           puts "\e[34m# GTK MRU:\e[0m" unless @noheader
         end
 
-        @gtk += 1
+        count[:gtk] += 1
         puts unex m.captures.first
       end
     end
@@ -85,18 +85,18 @@ class MRU
   def generic
     rd = genericpath
 
-    @generic = 0
+    count[:generic] = 0
     rd.each_child do |f|
       pf = Pathname.new f
       next unless pf.file?
       pf.readlines.each do |line|
         m = line.match /^URL.*?=(.*)/
         if m then
-          if @generic == 0 then
+          if count[:generic] == 0 then
             puts "\e[33m# Generic MRU:\e[0m" unless @noheader
           end
 
-          @generic += 1
+          count[:generic] += 1
           puts unex m.captures.first
         end
       end
@@ -108,15 +108,15 @@ class MRU
   end
 
   def krita
-    @krita = 0
+    count[:krita] = 0
     kritafile.open.readlines.each do |line|
       m = line.match /^Name\d*=(.*)/
       if m then
-        if @krita == 0 then
+        if count[:krita] == 0 then
           puts "\e[35m# Krita:\e[0m" unless @noheader
         end
 
-        @krita += 1
+        count[:krita] += 1
         puts unex m.captures.first
       end
     end
@@ -127,22 +127,26 @@ class MRU
   end
 
   def vlc
-    @vlc = 0
+    count[:vlc] = 0
     list = vlcfile.read.match /\[RecentsMRL\]\nlist=(.*?)\n/m
     list.captures.first.split(/, ?/).each do |f|
       # VLC uses a weird serialization format and this is basically null/empty set
       break if f == '@Invalid()'
 
-      if @vlc == 0 then
+      if count[:vlc] == 0 then
         puts "\e[35m# VLC:\e[0m" unless @noheader
       end
-      @vlc += 1
+      count[:vlc] += 1
       puts f.gsub(/file:\/\//, '')
     end if list
   end
 
   def report
-    puts "\n\e[36m# #{@generic + @gtk + @krita + @vlc} MRU files found in total\e[0m" unless @noheader
+    puts "\n\e[36m# #{count.values.sum} MRU files found in total\e[0m" unless @noheader
+  end
+
+  def count
+    @count ||= {}
   end
 
   def unex path
