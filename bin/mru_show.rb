@@ -16,8 +16,9 @@ class MRU
     puts "sources:"
     puts
     puts "\tGTK\t#{gtkfile false}"
-    puts "\tgeneric\t#{genericpath}"
     puts "\tKrita\t#{kritafile}"
+    puts "\tVLC\t#{vlcfile}"
+    puts "\tgeneric\t#{genericpath}"
     puts
     puts 'This will automatically find the GTK MRU data and display the list of files.'
     puts 'You can also pipe a file to it, as there may be multiple older GTK MRU files in the same directory.'
@@ -26,6 +27,7 @@ class MRU
   def run
     gtk
     krita
+    vlc
     generic
 
     report
@@ -120,8 +122,27 @@ class MRU
     end
   end
 
+  def vlcfile
+    configpath.join 'vlc', 'vlc-qt-interface.conf'
+  end
+
+  def vlc
+    @vlc = 0
+    list = vlcfile.read.match /\[RecentsMRL\]\nlist=(.*?)\n/m
+    list.captures.first.split(/, ?/).each do |f|
+      # VLC uses a weird serialization format and this is basically null/empty set
+      break if f == '@Invalid()'
+
+      if @vlc == 0 then
+        puts "\e[35m# VLC:\e[0m" unless @noheader
+      end
+      @vlc += 1
+      puts f.gsub(/file:\/\//, '')
+    end if list
+  end
+
   def report
-    puts "\n\e[36m# #{@generic + @gtk} MRU files found in total\e[0m" unless @noheader
+    puts "\n\e[36m# #{@generic + @gtk + @krita + @vlc} MRU files found in total\e[0m" unless @noheader
   end
 
   def unex path
