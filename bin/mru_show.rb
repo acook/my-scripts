@@ -5,7 +5,7 @@ require 'stringio'
 
 class MRU
   def initialize noheader: false
-    @noheader
+    @noheader = noheader
   end
 
   def usage
@@ -35,45 +35,29 @@ class MRU
 
   def gtkfile open = true
     mrufile = datapath.join 'recently-used.xbel'
+    return mrufile unless open
 
-    if $stdin.tty? then
-      if mrufile.exist? then
-        if open then
-          mrufile.open
-        else
-          mrufile
-        end
-      else # no file
-        if open then
-          puts "\e[31mno GTK MRU file found at: #{mrufile}\e[0m" unless @noheader
-          # stub it out so the loop will skip it
-          infile = StringIO.new
-        else
-          mrufile
-        end
-      end
-    else # no tty means something is being piped in
-      if open then
-        infile = $stdin
-      else
-          mrufile
-      end
+    # no tty means something is being piped in
+    # we assume this is a GTK file and use it instead
+    return $stdin unless $stdin.tty?
+
+    if mrufile.exist? then
+      mrufile.open
+    else
+      # if can't find the MRU file then we can report it
+      warn "\e[31mno GTK MRU file found at: #{mrufile}\e[0m" unless @noheader
+      # stub it out so the loop will skip it
+      StringIO.new
     end
   end
 
   def gtk
     lines = gtkfile.readlines
 
-    count[:gtk] = 0
     lines.each do |line|
       m = line.match(/file:\/\/(.*?)"/)
       if m then
-        if count[:gtk] == 0 then
-          puts "\e[34m# GTK MRU:\e[0m" unless @noheader
-        end
-
-        count[:gtk] += 1
-        puts unex m.captures.first
+        mru :gtk, 'GTK', m.captures.first
       end
     end
   end
@@ -83,21 +67,17 @@ class MRU
   end
 
   def generic
-    rd = genericpath
-
-    count[:generic] = 0
-    rd.each_child do |f|
+    genericpath.each_child do |f|
       pf = Pathname.new f
+
+      # skip directories
       next unless pf.file?
+
+      # extract the URL from each file
       pf.readlines.each do |line|
         m = line.match /^URL.*?=(.*)/
         if m then
-          if count[:generic] == 0 then
-            puts "\e[33m# Generic MRU:\e[0m" unless @noheader
-          end
-
-          count[:generic] += 1
-          puts unex m.captures.first
+          mru :generic, 'generic', m.captures.first
         end
       end
     end
@@ -112,12 +92,7 @@ class MRU
     kritafile.open.readlines.each do |line|
       m = line.match /^Name\d*=(.*)/
       if m then
-        if count[:krita] == 0 then
-          puts "\e[35m# Krita:\e[0m" unless @noheader
-        end
-
-        count[:krita] += 1
-        puts unex m.captures.first
+        mru :krita, 'Krita', m.captures.first
       end
     end
   end
@@ -127,17 +102,21 @@ class MRU
   end
 
   def vlc
-    count[:vlc] = 0
     list = vlcfile.read.match /\[RecentsMRL\]\nlist=(.*?)\n/m
-    list.captures.first.split(/, ?/).each do |f|
+
+    # VLC doesn't consistantly quote filenames, so splitting on commas is perilous
+    # i don't feel like writing a parser, so i am splitting on the protocol portion
+    # this includes http:// and file:// which are unlikely to appear in filenames
+    list.captures.first.split(/\w+:\/\//).each do |f|
       # VLC uses a weird serialization format and this is basically null/empty set
       break if f == '@Invalid()'
 
-      if count[:vlc] == 0 then
-        puts "\e[35m# VLC:\e[0m" unless @noheader
-      end
-      count[:vlc] += 1
-      puts f.gsub(/file:\/\//, '')
+      # cleanup any quotes or commas
+      cf = f.gsub(/^"|"$/, '').gsub(/, $/, '')
+      # there may be stray leading quote in the very first position, so we skip it
+      next if cf == ""
+
+      mru :vlc, 'VLC', cf
     end if list
   end
 
@@ -145,10 +124,21 @@ class MRU
     puts "\n\e[36m# #{count.values.sum} MRU files found in total\e[0m" unless @noheader
   end
 
+  def mru key, name, file
+    if count[key] then
+      count[key] += 1
+    else
+      count[key] = 0
+      puts "\e[34m# #{name}:\e[0m" unless @noheader
+    end
+    puts unex file
+  end
+
   def count
     @count ||= {}
   end
 
+  # expand tilde to save space and make paths more readable
   def unex path
     path.gsub /^#{ENV['HOME']}/, '~'
   end
