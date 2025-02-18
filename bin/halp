@@ -5,18 +5,84 @@
 
 command_exists() { command -v "$1" 1>&- 2>&-; }
 
-if command_exists bat; then
-  has_bat=true
-fi
+usage() {
+  echo halp - get colorized help for a command
+  echo
+  echo -e "\t--help\tyou're looking at it"
+  echo -e "\t--man\tsearch the manpages"
+  echo -e "\t--cmd\tuse the command's --help"
+}
+
+check_bat() {
+  if [[ $has_bat == "true" ]]; then
+    return 0
+  elif [[ $has_bat == "false" ]]; then
+    return 2
+  fi
+
+  if command_exists bat; then
+    has_bat=true
+    opts=(--language=help --style=plain)
+    return 0
+  else
+    has_bat=false
+    return 2
+  fi
+}
+
+doc_man() {
+  incmd=(man "$@")
+
+  if check_bat; then
+    opts=(--language=man --style=plain)
+  fi
+}
+
+doc_info() {
+  # i can't currently find a good way to hilite info pages, so fall back to the original command for now
+  exec info "$1" --usage --vi-keys
+}
+
+doc_cmd() {
+  incmd=("$1" --help)
+}
+
+doc_shell() {
+  if [[ $current_shell == *fish* ]]; then
+    # fish probably already launched a browser when we checked and there's no point opening two of them
+    echo "check browser documentation"
+    # TODO: check for commandline browsers and use them
+    #     - in a function: check for fish
+    #     - check for commandline browsers
+    #     - run the command check as above but with BROWSER set to one of our choice
+    exit 0
+  fi
+  incmd=("$current_shell" -c "help '$name'")
+}
+
+case "$1" in
+  --help)
+    usage
+    exit 0
+    ;;
+  --man)
+    doc=man
+    shift
+    doc_man
+    ;;
+  --cmd)
+    doc=cmd
+    shift
+    doc_cmd
+    ;;
+esac
+
+name="$1"
 
 if command_exists ccat; then
   view=ccat
-elif [[ $has_bat == "true" ]]; then
+elif check_bat; then
   view=bat
-fi
-
-if [[ $has_bat == "true" ]]; then
-  opts=(--language=help --style=plain)
 fi
 
 current_shell="$(basename "$(realpath "/proc/$PPID/exe")")"
@@ -26,30 +92,16 @@ fi
 
 if [[ ! -t 0 ]]; then # there's something being piped in
   incmd=(cat /dev/stdin)
-elif "$current_shell" -c "help '$1'" 1>&- 2>&-; then
-  if [[ $current_shell == *fish* ]]; then
-    # fish launches a browser and there's no point opening two of them
-    echo "check browser documentation"
-    # TODO: check for commandline browsers and use them
-    #     - in a function: check for fish
-    #     - check for commandline browsers
-    #     - run the command check as above but with BROWSER set to one of our choice
-    exit 0
-  fi
-  incmd=("$current_shell" -c "help '$1'")
-elif command_exists info && [[ $(info "$1" 2>&1) != *"No menu item"* ]]; then
-  # i can't currently find a good way to hilite info pages, so fall back to the original command for now
-  exec info "$1" --usage --vi-keys
-elif man "$1" 1>&- 2>&-; then
-  incmd=(man "$1")
-
-  if [[ $has_bat == "true" ]]; then
-    opts=(--language=man --style=plain)
-  fi
-elif command_exists "$1"; then
-  incmd=("$1" --help)
-elif man -k "$1" 1>&- 2>&-; then
-  incmd=(man -k "$1")
+elif "$current_shell" -c "help '$name'" 1>&- 2>&-; then
+  doc_shell "$name"
+elif command_exists info && [[ $(info "$name" 2>&1) != *"No menu item"* ]]; then
+  doc_info
+elif man "$name" 1>&- 2>&-; then
+  doc_man "$name"
+elif command_exists "$name"; then
+  doc_cmd "$name"
+elif man -k "$name" 1>&- 2>&-; then
+  doc_man -k "$name"
 fi
 
 # consider detecting and incorporating local-only versions of cheat sheets
