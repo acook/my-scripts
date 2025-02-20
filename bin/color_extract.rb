@@ -19,6 +19,8 @@ class ColorExtractor
   end
 
   def run
+    parse_opts
+
     if $stdin.tty?
       extract_file
     else
@@ -48,7 +50,7 @@ class ColorExtractor
   end
 
   def display
-    puts html
+    puts self.send @format
   end
 
   def csv
@@ -61,6 +63,10 @@ class ColorExtractor
 
   def sp
     list ' '
+  end
+
+  def ary
+    sorted.inspect
   end
 
   def css
@@ -76,11 +82,9 @@ class ColorExtractor
         flex-wrap: wrap;
       }
       .blot {
+        #{css_style}
         height: 10em;
         width: 10em;
-        border: 1em solid #555;
-        border-radius: 3em;
-        margin: 1em;
         flex: auto;
         display: flex;
         align-items: center;
@@ -137,6 +141,16 @@ class ColorExtractor
     HTML
   end
 
+  def css_style
+    if @border then
+    <<-CSS
+        border: 1em solid #555;
+        border-radius: 3em;
+        margin: 1em;
+    CSS
+    end
+  end
+
   def list sep
     sorted.join sep
   end
@@ -147,6 +161,36 @@ class ColorExtractor
 
   def colors
     @colors
+  end
+
+  def parse_opts
+    new_args = []
+    @format = :csv
+    @args.each do |arg|
+      case arg
+      when '--border'
+        @border = true
+      when '--html'
+        @format = :html
+      when '--csv'
+        @format = :csv
+      when '--nl'
+        @format = :nl
+      when '--ary'
+        @format = :ary
+      when '--sp'
+        @format = :sp
+      when '--css'
+        @format = :css
+      else
+        new_args << arg
+      end
+    end
+    @args = new_args
+  end
+
+  def filename
+    @args.first
   end
 end
 
