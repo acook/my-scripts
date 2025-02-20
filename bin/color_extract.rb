@@ -10,12 +10,29 @@ class ColorExtractor
   end
 
   def usage
-    puts 'color_extractor - collect hex colors from text'
-    puts
-    puts "\tcolor_extractor filename"
-    puts "\tcat filename | color_extractor"
-    puts
-    puts 'Output will be a set of color codes, de-duplicated, and sorted.'
+    <<~USAGE
+      color_extractor - collect hex colors from text
+
+      options:
+
+      \t--border\tadds a border around color blots (requires --html)
+
+      output format:
+
+      \t--ary\toutput as valid Ruby array (also good for most other programming languages)
+      \t--css\toutput as CSS
+      \t--csv\toutput as CSV
+      \t--html\toutput as a full HTML document
+      \t--nl\toutput separated by newlines
+      \t--sp\toutput separated by spaces
+
+      usage:
+
+      \tcolor_extractor filename
+      \tcat filename | color_extractor
+
+      Output will be a set of color codes, de-duplicated, and sorted.
+    USAGE
   end
 
   def run
@@ -31,12 +48,13 @@ class ColorExtractor
   end
 
   def extract_file
-    if @args[0].empty? then
-      usage
+    if !@file then
+      warn usage
+      warn "\e[31mno file specified\e[0m"
       exit 1
     end
 
-    extract Pathname.new(@args[0]).open
+    extract @file.open
   end
 
   REGHEX = /(#\h{6})/
@@ -124,7 +142,7 @@ class ColorExtractor
   end
 
   def html
-    <<-HTML
+    <<~HTML
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -182,8 +200,20 @@ class ColorExtractor
         @format = :sp
       when '--css'
         @format = :css
+      when /^--help$|^-h$|^-\?$|^--version$/
+        puts usage
+        exit 0
+      when '--'
+        break # stop processing arguments
       else
-        new_args << arg
+        # presumably a filename
+        f = Pathname.new arg
+        unless f.exist? then
+          warn usage
+          warn "\e[31mfile not found: #{f}\e[0m"
+          exit 1
+        end
+        @file = f
       end
     end
     @args = new_args
