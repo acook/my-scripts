@@ -41,7 +41,8 @@ module DNS
             @manager ||= case OS
             when /darwin/
                 MacOS
-            #when /linux/
+            when /linux/
+                Linux
             #when /mswin|mingw/
             else
                 warn "Unknown OS: #{OS}"
@@ -114,7 +115,7 @@ module DNS
                 - windows support
                 - IPv6 support
                 - specify the device/adapter on the commandline
-                - attempt to guess the device or adaper when given the other
+                - attempt to guess the device or adapter when given the other
                 - load providers from file?
             TODO
         end
@@ -131,16 +132,21 @@ module DNS
 
         protected
 
+        IP_REGEX = /\b((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(\.|$)){4}\b/
+
         def set_dns name_or_ips
             name = name_or_ips.downcase.to_sym
-            new_ipv4 = if name == :dhcp
+            if name == :dhcp
                 manager.set_dhcp
-            elsif providers.keys.include? name
+                return
+            end
+
+            new_ipv4 = if providers.keys.include? name
                 providers[name][:ipv4]
-            elsif /\b((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(\.|$)){4}\b/ =~ name_or_ips
+            elsif IP_REGEX =~ name_or_ips
                 name
             else
-                warn "Unrecongized provider name or IP address: #{name_or_ips}"
+                warn "Unrecognized provider name or IP address: #{name_or_ips}"
                 exit 254
             end
 
@@ -180,6 +186,54 @@ module DNS
 
             def adapter
                 "Wi-Fi"
+            end
+
+            def device
+                "en0"
+            end
+        end
+    end
+
+    class Linux
+        class << self
+            # also `resolvectl status`
+            def current_ipv4
+                `nmcli dev show`.split(?\n).each.with_object([]) do |line, dns|
+                    match = line.match /IP4\.DNS\[\d\]:\s*(\d+\.\d+\.\d+\.\d+)$/
+                    if match then
+                        dns << match.captures.first
+                    end
+                end
+            end
+
+            def set_dhcp
+                #`ipconfig getoption #{device} domain_name_server`
+                raise NotImplementedError
+            end
+
+            def set_ipv4 *new_dns
+               `sudo nmcli connection modify "#{adapter}" ipv4.dns "#{new_dns.join " "}"`
+            end
+
+            def adapter
+                as = adapters
+                if as.empty? then
+                    warn "Adapter not found!\n\n\e[31m#{`nmcli device`}\e[0m"
+                    exit 1
+                end
+                as.first
+            end
+
+            def adapters
+                `nmcli device`.split(?\n).each.with_object([]) do |line, as|
+                    next if line.include? "CONNECTION"
+
+                    match = line.match /^(.*?)\s+(?:ethernet|wifi)\s+connected/
+
+                    if match then
+                        as << match.captures.first
+                    end
+                end
             end
 
             def device
